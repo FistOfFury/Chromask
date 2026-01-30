@@ -117,6 +117,25 @@ const HELP_DIALOG = {
 };
 ```
 
+### STORAGE Constants
+
+```typescript
+const STORAGE = {
+  SELECTED_CHARACTER_INDEX: 'chromask_selected_character',  // localStorage key for character selection
+};
+```
+
+Character selection is persisted to localStorage and restored when the game starts. Players can switch characters before their first jump using TAB, and the selection will be remembered after game over.
+
+```typescript
+// On game start, load saved character index
+const saved = localStorage.getItem(STORAGE.SELECTED_CHARACTER_INDEX);
+const index = saved ? parseInt(saved, 10) : 0;
+
+// When switching or dying, save current selection
+localStorage.setItem(STORAGE.SELECTED_CHARACTER_INDEX, currentIndex.toString());
+```
+
 ### CHARACTER Constants
 
 ```typescript

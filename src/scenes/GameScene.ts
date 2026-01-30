@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -54,9 +54,9 @@ export class GameScene extends Phaser.Scene {
     this.setupPhysicsWorld();
     this.setupInput();
     this.setupSystems();
+    this.setupUI();  // Setup UI first (characterSelector needed for setupPlayer)
     this.setupPlayer();
     this.setupCamera();
-    this.setupUI();
     this.setupCollision();
   }
 
@@ -100,13 +100,30 @@ export class GameScene extends Phaser.Scene {
     const groundTop = this.gameHeight - PLATFORM.HEIGHT;
     const playerY = groundTop - PLAYER.HEIGHT / 2 - 1;
     this.player = new Player(this, this.gameWidth / 2, playerY);
-    this.currentCharacterIndex = 0;
+    this.currentCharacterIndex = this.loadSelectedCharacterIndex();
     this.hasJumped = false;
-    this.player.setCharacter(CHARACTER_DEFINITIONS[this.currentCharacterIndex]);
+    const character = CHARACTER_DEFINITIONS[this.currentCharacterIndex];
+    this.player.setCharacter(character);
+    this.characterSelector.update(character.name, character.texture);
     this.highestY = this.player.y;
     this.startingY = this.player.y;
     this.forcedScrollY = 0;
     this.floorStarted = false;
+  }
+
+  private loadSelectedCharacterIndex(): number {
+    const saved = localStorage.getItem(STORAGE.SELECTED_CHARACTER_INDEX);
+    if (saved !== null) {
+      const index = parseInt(saved, 10);
+      if (index >= 0 && index < CHARACTER_DEFINITIONS.length) {
+        return index;
+      }
+    }
+    return 0;
+  }
+
+  private saveSelectedCharacterIndex(): void {
+    localStorage.setItem(STORAGE.SELECTED_CHARACTER_INDEX, this.currentCharacterIndex.toString());
   }
 
   private setupCamera(): void {
@@ -206,15 +223,16 @@ export class GameScene extends Phaser.Scene {
      return this.player.y >= this.startingY - 10;
    }
 
-   private handleCharacterSwitch(): void {
-     if (this.hasJumped) return;
-     if (Phaser.Input.Keyboard.JustDown(this.tabKey) && this.isOnGround()) {
-       this.currentCharacterIndex = (this.currentCharacterIndex + 1) % CHARACTER_DEFINITIONS.length;
-       const character = CHARACTER_DEFINITIONS[this.currentCharacterIndex];
-       this.player.setCharacter(character);
-       this.characterSelector.update(character.name, character.texture);
-     }
-   }
+    private handleCharacterSwitch(): void {
+      if (this.hasJumped) return;
+      if (Phaser.Input.Keyboard.JustDown(this.tabKey) && this.isOnGround()) {
+        this.currentCharacterIndex = (this.currentCharacterIndex + 1) % CHARACTER_DEFINITIONS.length;
+        const character = CHARACTER_DEFINITIONS[this.currentCharacterIndex];
+        this.player.setCharacter(character);
+        this.characterSelector.update(character.name, character.texture);
+        this.saveSelectedCharacterIndex();
+      }
+    }
 
   private updateColorFromKeys(): void {
     const red = this.colorKeys.red.isDown;
@@ -294,6 +312,7 @@ export class GameScene extends Phaser.Scene {
 
   private checkDeath(): void {
     if (this.player.isBelowScreen(this.cameras.main.scrollY, this.gameHeight)) {
+      this.saveSelectedCharacterIndex();
       const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
       const score = this.difficultyManager.getPlatformHeight(pixelHeight);
       this.scene.start('GameOverScene', { score });

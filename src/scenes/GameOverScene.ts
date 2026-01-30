@@ -11,7 +11,7 @@ export class GameOverScene extends Phaser.Scene {
     this.add.text(width / 2, height / 3, 'GAME OVER', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '36px',
-      color: '#EEEEEE',
+      color: '#888888',
       fontStyle: 'bold',
       resolution: window.devicePixelRatio,
     }).setOrigin(0.5);
