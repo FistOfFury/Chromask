@@ -1,17 +1,18 @@
 import Phaser from 'phaser';
-import { PLAYER } from '../constants';
+import { PLAYER, CharacterDefinition, CHARACTER } from '../constants';
 import { Shadow } from './Shadow';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  private leftEye!: Phaser.GameObjects.Ellipse;
-  private rightEye!: Phaser.GameObjects.Ellipse;
-  private leftPupil!: Phaser.GameObjects.Ellipse;
-  private rightPupil!: Phaser.GameObjects.Ellipse;
-  private eyeOffsetY: number;
+  private readonly SPRITE_SCALE = 2;
+  private currentCharacter: CharacterDefinition = CHARACTER.RUNNER;
+  private leftEye: Phaser.GameObjects.Ellipse | null = null;
+  private rightEye: Phaser.GameObjects.Ellipse | null = null;
+  private leftPupil: Phaser.GameObjects.Ellipse | null = null;
+  private rightPupil: Phaser.GameObjects.Ellipse | null = null;
   private shadow: Shadow;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'player');
+    super(scene, x, y, 'player-sprite');
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -20,37 +21,131 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     body.setCollideWorldBounds(true);
     body.setBounce(0);
     body.setFriction(1, 0);
-    this.setSize(PLAYER.WIDTH, PLAYER.HEIGHT);
+    this.setScale(this.SPRITE_SCALE);
+    // setSize/setOffset work in unscaled sprite coordinates
+    this.setSize(24, 28);
+    this.setOffset(4, 2);
 
-    this.eyeOffsetY = -PLAYER.HEIGHT * 0.35;
-    this.createEyes(scene);
     this.shadow = new Shadow(scene, -5);
-  }
-
-  private createEyes(scene: Phaser.Scene): void {
-    const eyeWidth = 6;
-    const eyeHeight = 8;
-
-    this.leftEye = scene.add.ellipse(0, this.eyeOffsetY, eyeWidth, eyeHeight, 0xFFFFFF);
-    this.rightEye = scene.add.ellipse(0, this.eyeOffsetY, eyeWidth, eyeHeight, 0xFFFFFF);
-
-    const pupilSize = 3;
-    this.leftPupil = scene.add.ellipse(0, this.eyeOffsetY, pupilSize, pupilSize, 0x222222);
-    this.rightPupil = scene.add.ellipse(0, this.eyeOffsetY, pupilSize, pupilSize, 0x222222);
   }
 
   preUpdate(time: number, delta: number): void {
     super.preUpdate(time, delta);
+    this.updateAnimation();
+    this.updateEyes();
+    this.updateShadow();
+  }
 
-    this.leftEye.setPosition(this.x - PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
-    this.rightEye.setPosition(this.x + PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
-    this.leftPupil.setPosition(this.x - PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
-    this.rightPupil.setPosition(this.x + PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
+  private createEyes(): void {
+    const eyeOffsetY = -PLAYER.HEIGHT * 0.35;
+    const eyeSpacingX = PLAYER.WIDTH * 0.2;
 
+    this.leftEye = this.scene.add.ellipse(this.x - eyeSpacingX, this.y + eyeOffsetY, 6, 8, 0xFFFFFF);
+    this.rightEye = this.scene.add.ellipse(this.x + eyeSpacingX, this.y + eyeOffsetY, 6, 8, 0xFFFFFF);
+    this.leftPupil = this.scene.add.ellipse(this.x - eyeSpacingX, this.y + eyeOffsetY, 3, 3, 0x333333);
+    this.rightPupil = this.scene.add.ellipse(this.x + eyeSpacingX, this.y + eyeOffsetY, 3, 3, 0x333333);
+
+    this.leftEye.setDepth(10);
+    this.rightEye.setDepth(10);
+    this.leftPupil.setDepth(11);
+    this.rightPupil.setDepth(11);
+  }
+
+  private destroyEyes(): void {
+    this.leftEye?.destroy();
+    this.rightEye?.destroy();
+    this.leftPupil?.destroy();
+    this.rightPupil?.destroy();
+    this.leftEye = null;
+    this.rightEye = null;
+    this.leftPupil = null;
+    this.rightPupil = null;
+  }
+
+  private updateEyes(): void {
+    if (!this.leftEye) return;
+
+    const eyeOffsetY = -PLAYER.HEIGHT * 0.35;
+    const eyeSpacingX = PLAYER.WIDTH * 0.2;
+
+    this.leftEye.setPosition(this.x - eyeSpacingX, this.y + eyeOffsetY);
+    this.rightEye!.setPosition(this.x + eyeSpacingX, this.y + eyeOffsetY);
+    this.leftPupil!.setPosition(this.x - eyeSpacingX, this.y + eyeOffsetY);
+    this.rightPupil!.setPosition(this.x + eyeSpacingX, this.y + eyeOffsetY);
+  }
+
+  private updateShadow(): void {
     const body = this.body as Phaser.Physics.Arcade.Body;
     const isGrounded = body.blocked.down || body.touching.down;
     const camera = this.scene.cameras.main;
-    this.shadow.update(this.x, this.y, PLAYER.WIDTH, PLAYER.HEIGHT, isGrounded, camera.scrollY);
+    const char = this.currentCharacter;
+    this.shadow.update(this.x, this.y, char.hitbox.width * char.scale, char.hitbox.height * char.scale, isGrounded, camera.scrollY);
+  }
+
+  private updateAnimation(): void {
+    if (!this.currentCharacter.hasAnimations) {
+      return;
+    }
+
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    const velocityX = body.velocity.x;
+    const velocityY = body.velocity.y;
+    const onGround = body.blocked.down || body.touching.down;
+
+    // Handle sprite flipping
+    if (velocityX < 0) {
+      this.setFlipX(true);
+    } else if (velocityX > 0) {
+      this.setFlipX(false);
+    }
+
+    // Determine animation based on state
+    let nextAnimation: string;
+
+    if (!onGround) {
+      // In air
+      if (velocityY < 0) {
+        nextAnimation = 'player-jump';
+      } else {
+        nextAnimation = 'player-fall';
+      }
+    } else {
+      // On ground
+      if (Math.abs(velocityX) > 0) {
+        nextAnimation = 'player-run';
+      } else {
+        nextAnimation = 'player-idle';
+      }
+    }
+
+    // Only switch animation if different
+    if (this.anims.currentAnim?.key !== nextAnimation) {
+      this.play(nextAnimation);
+    }
+  }
+
+  setCharacter(character: CharacterDefinition): void {
+    this.currentCharacter = character;
+    this.setTexture(character.texture);
+    this.setScale(character.scale);
+    this.setSize(character.hitbox.width, character.hitbox.height);
+    this.setOffset(character.hitbox.offsetX, character.hitbox.offsetY);
+
+    if (!character.hasAnimations) {
+      this.anims.stop();
+    } else {
+      this.play('player-idle');
+    }
+
+    if (character.hasEyes) {
+      this.createEyes();
+    } else {
+      this.destroyEyes();
+    }
+  }
+
+  getCharacter(): CharacterDefinition {
+    return this.currentCharacter;
   }
 
   moveLeft(): void {
@@ -78,10 +173,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   destroy(fromScene?: boolean): void {
-    this.leftEye?.destroy();
-    this.rightEye?.destroy();
-    this.leftPupil?.destroy();
-    this.rightPupil?.destroy();
+    this.destroyEyes();
     this.shadow.destroy();
     super.destroy(fromScene);
   }

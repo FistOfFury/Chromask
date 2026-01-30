@@ -6,8 +6,16 @@ export class PreloadScene extends Phaser.Scene {
     super({ key: 'PreloadScene' });
   }
 
+  preload(): void {
+    this.load.spritesheet('player-sprite', 'assets/Running.png', {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+  }
+
   create(): void {
     this.createTextures();
+    this.createAnimations();
     this.scene.start('GameScene');
   }
 
@@ -18,6 +26,36 @@ export class PreloadScene extends Phaser.Scene {
     this.createPlayerTexture(graphics);
 
     graphics.destroy();
+  }
+
+  private createAnimations(): void {
+    this.anims.create({
+      key: 'player-run',
+      frames: this.anims.generateFrameNumbers('player-sprite', { start: 0, end: 13 }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'player-idle',
+      frames: this.anims.generateFrameNumbers('player-sprite', { start: 14, end: 17 }),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'player-jump',
+      frames: this.anims.generateFrameNumbers('player-sprite', { start: 19, end: 19 }),
+      frameRate: 1,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: 'player-fall',
+      frames: this.anims.generateFrameNumbers('player-sprite', { start: 18, end: 18 }),
+      frameRate: 1,
+      repeat: 0,
+    });
   }
 
   private createPlatformTextures(graphics: Phaser.GameObjects.Graphics): void {
