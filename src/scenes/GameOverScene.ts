@@ -11,7 +11,7 @@ export class GameOverScene extends Phaser.Scene {
     this.add.text(width / 2, height / 3, 'GAME OVER', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '36px',
-      color: '#888888',
+      color: '#666666',
       fontStyle: 'bold',
       resolution: window.devicePixelRatio,
     }).setOrigin(0.5);
@@ -19,7 +19,7 @@ export class GameOverScene extends Phaser.Scene {
     this.add.text(width / 2, height / 2, `${data.score ?? 0}`, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '64px',
-      color: '#CCCCCC',
+      color: '#666666',
       fontStyle: 'bold',
       resolution: window.devicePixelRatio,
     }).setOrigin(0.5);
@@ -27,7 +27,7 @@ export class GameOverScene extends Phaser.Scene {
     this.add.text(width / 2, height * 0.7, 'Press SPACE', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '18px',
-      color: '#888888',
+      color: '#666666',
       resolution: window.devicePixelRatio,
     }).setOrigin(0.5);
 

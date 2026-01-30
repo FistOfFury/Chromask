@@ -144,11 +144,11 @@ export class GameScene extends Phaser.Scene {
     this.characterSelector = new CharacterSelector(this, 20, 55);
 
     this.scoreText = this.add.text(this.gameWidth - 20, 20, '0', {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '24px',
-      color: '#EEEEEE',
-      fontStyle: 'bold',
-      resolution: window.devicePixelRatio,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontSize: '28px',
+      color: '#666666',
+      fontStyle: '600',
+      resolution: window.devicePixelRatio * 2,
     });
     this.scoreText.setOrigin(1, 0);
     this.scoreText.setScrollFactor(0);
