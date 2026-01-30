@@ -174,13 +174,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateScore(): void {
-    const score = Math.abs(Math.floor(this.difficultyManager.getHeightClimbed(this.highestY)));
-    this.scoreText.setText(`Score: ${score}`);
+    const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
+    const score = this.difficultyManager.getPlatformHeight(pixelHeight);
+    this.scoreText.setText(`Height: ${score}`);
   }
 
   private checkDeath(): void {
     if (this.player.isBelowScreen(this.cameras.main.scrollY)) {
-      const score = Math.abs(Math.floor(this.difficultyManager.getHeightClimbed(this.highestY)));
+      const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
+      const score = this.difficultyManager.getPlatformHeight(pixelHeight);
       this.scene.start('GameOverScene', { score });
     }
   }

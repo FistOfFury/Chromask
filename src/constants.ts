@@ -92,6 +92,12 @@ export const DIFFICULTY = {
   
   // Grace period before forced scroll
   GRACE_PERIOD: 500,
+  
+  // Rising floor mechanic
+  /** Height in pixels before forced camera scroll starts (~10 platforms) */
+  FLOOR_START_HEIGHT: 750,
+  /** Average pixels per platform for height display conversion */
+  HEIGHT_PER_PLATFORM: 75,
 } as const;
 
 // =============================================================================
