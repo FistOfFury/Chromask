@@ -98,6 +98,16 @@ export const DIFFICULTY = {
   FLOOR_START_HEIGHT: 750,
   /** Average pixels per platform for height display conversion */
   HEIGHT_PER_PLATFORM: 75,
+  
+  // Early game (tutorial-like) phase
+  /** Height in pixels for easy phase (~5 platforms) */
+  EASY_PHASE_HEIGHT: 375,
+  /** Probability (0-1) of keeping same color as previous platform in easy phase */
+  EASY_PHASE_SAME_COLOR_CHANCE: 0.7,
+  /** Max vertical gap during easy phase (smaller = easier) */
+  EASY_PHASE_MAX_GAP_Y: 70,
+  /** Max horizontal distance from previous platform during easy phase */
+  EASY_PHASE_MAX_X_DRIFT: 150,
 } as const;
 
 // =============================================================================
