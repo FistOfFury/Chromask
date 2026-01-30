@@ -89,7 +89,8 @@ void main() {
   
   if (hueDiff <= uKeyHueRange && pixelSat > 0.2) {
     if (uIsGrayscale > 0.5) {
-      gl_FragColor = vec4(vec3(pixelLight), texel.a);
+      float lightenedGray = pixelLight + (1.0 - pixelLight) * 0.6;
+      gl_FragColor = vec4(vec3(lightenedGray), texel.a);
     } else {
       vec3 targetHsl = rgbToHsl(uTargetColor);
       vec3 newHsl = vec3(targetHsl.x, targetHsl.y * 0.9, pixelLight);
