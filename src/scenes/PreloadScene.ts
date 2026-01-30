@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GameColor, COLOR_HEX, PLATFORM, PLAYER } from '../constants';
+import { GameColor, COLOR_HEX, PLATFORM, PLAYER, AUDIO } from '../constants';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +10,11 @@ export class PreloadScene extends Phaser.Scene {
     this.load.spritesheet('player-sprite', 'assets/runner.png', {
       frameWidth: 32,
       frameHeight: 32,
+    });
+
+    // Load all audio assets
+    Object.entries(AUDIO.FILES).forEach(([key, path]) => {
+      this.load.audio(key, path);
     });
   }
 

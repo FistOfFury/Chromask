@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, AUDIO } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
 import { PlatformSpawner } from '../systems/PlatformSpawner';
 import { DifficultyManager } from '../systems/DifficultyManager';
+import { AudioManager } from '../systems/AudioManager';
 import { ColorIndicator } from '../ui/ColorIndicator';
 import { HelpDialog } from '../ui/HelpDialog';
 import { CharacterSelector } from '../ui/CharacterSelector';
@@ -15,6 +16,7 @@ export class GameScene extends Phaser.Scene {
   private colorSystem!: ColorSystem;
   private platformSpawner!: PlatformSpawner;
   private difficultyManager!: DifficultyManager;
+  private audioManager!: AudioManager;
   private colorIndicator!: ColorIndicator;
   private helpDialog!: HelpDialog;
   private characterSelector!: CharacterSelector;
@@ -34,6 +36,9 @@ export class GameScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text;
   private helpHint!: Phaser.GameObjects.Text;
   private startingY: number = 0;
+  private lastPlayerX: number = 0;
+  private lastPlayerY: number = 0;
+  private idleStartTime: number = 0;
 
   private get gameWidth(): number {
     return this.cameras.main.width;
@@ -48,17 +53,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Reset all scene state for new game (scene object is reused by Phaser)
-    this.maxScrollSpeed = 0;
+     // Reset all scene state for new game (scene object is reused by Phaser)
+     this.maxScrollSpeed = 0;
 
-    this.setupPhysicsWorld();
-    this.setupInput();
-    this.setupSystems();
-    this.setupPlayer();
-    this.setupCamera();
-    this.setupUI();
-    this.setupCollision();
-  }
+     this.setupPhysicsWorld();
+     this.setupInput();
+     this.setupSystems();
+     this.audioManager = new AudioManager(this);
+     this.setupPlayer();
+     this.setupCamera();
+     this.setupUI();
+     this.setupCollision();
+     this.audioManager.playGameStart();
+     this.lastPlayerX = this.player.x;
+     this.lastPlayerY = this.player.y;
+     this.idleStartTime = Date.now();
+   }
 
   private setupPhysicsWorld(): void {
     this.physics.world.setBounds(0, -100000, this.gameWidth, 200000);
@@ -148,23 +158,36 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setX(gameSize.width - 20);
   }
 
-  private setupCollision(): void {
-    this.physics.add.collider(this.player, this.platforms, (playerObj, platformObj) => {
-      const player = playerObj as Player;
-      const platform = platformObj as Platform;
-      const playerBody = player.body as Phaser.Physics.Arcade.Body;
-      const platformBody = platform.body as Phaser.Physics.Arcade.StaticBody;
+   private setupCollision(): void {
+     this.physics.add.collider(this.player, this.platforms, (playerObj, platformObj) => {
+       const player = playerObj as Player;
+       const platform = platformObj as Platform;
+       const playerBody = player.body as Phaser.Physics.Arcade.Body;
+       const platformBody = platform.body as Phaser.Physics.Arcade.StaticBody;
 
-      if (playerBody.blocked.down || playerBody.touching.down) {
-        const playerBottom = playerBody.bottom;
-        const platformTop = platformBody.top;
-        
-        if (playerBottom <= platformTop + 5 && playerBody.velocity.y >= 0) {
-          platform.markContacted();
-        }
-      }
-    });
-  }
+       if (playerBody.blocked.down || playerBody.touching.down) {
+         const playerBottom = playerBody.bottom;
+         const platformTop = platformBody.top;
+         
+          if (playerBottom <= platformTop + 5 && playerBody.velocity.y >= 0) {
+            // Check for near-miss (close call) landing
+            if (!platform.isContacted()) {
+              const deathThreshold = this.cameras.main.scrollY + this.gameHeight + 50;
+              const nearMissThreshold = deathThreshold - 50; // 50px safety margin
+              
+              if (player.y > nearMissThreshold) {
+                // Near-miss! Play BRUH instead of platform hit
+                this.audioManager.playBruh();
+              } else {
+                // Normal landing
+                this.audioManager.playPlatformHit(platform.platformColor);
+              }
+            }
+            platform.markContacted();
+          }
+       }
+     });
+   }
 
    update(_time: number, delta: number): void {
      this.handleInput();
@@ -175,6 +198,7 @@ export class GameScene extends Phaser.Scene {
      this.updateCamera(delta);
      this.updateSpawning();
      this.updateScore();
+     this.checkWarning();
      this.checkDeath();
    }
 
@@ -193,13 +217,18 @@ export class GameScene extends Phaser.Scene {
        this.player.stopHorizontal();
      }
 
-     if (jump) {
-       this.player.jump();
-       if (!this.hasJumped) {
-         this.hasJumped = true;
-         this.characterSelector.hide();
-       }
-     }
+      if (jump) {
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        const canJump = body.blocked.down || body.touching.down;
+        if (canJump) {
+          this.audioManager.playJump();
+        }
+        this.player.jump();
+        if (!this.hasJumped) {
+          this.hasJumped = true;
+          this.characterSelector.hide();
+        }
+      }
    }
 
    private isOnGround(): boolean {
@@ -292,11 +321,34 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setText(`Height: ${score}`);
   }
 
-  private checkDeath(): void {
-    if (this.player.isBelowScreen(this.cameras.main.scrollY, this.gameHeight)) {
-      const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
-      const score = this.difficultyManager.getPlatformHeight(pixelHeight);
-      this.scene.start('GameOverScene', { score });
+  private checkWarning(): void {
+    const warningZoneY = this.cameras.main.scrollY + this.gameHeight * (1 - AUDIO.CONFIG.WARNING_ZONE_PERCENT);
+    const isInWarningZone = this.player.y > warningZoneY;
+    
+    // Check if player has moved
+    const hasMoved = this.player.x !== this.lastPlayerX || this.player.y !== this.lastPlayerY;
+    
+    if (hasMoved) {
+      // Reset idle timer on movement
+      this.lastPlayerX = this.player.x;
+      this.lastPlayerY = this.player.y;
+      this.idleStartTime = Date.now();
+    } else if (isInWarningZone) {
+      // Check if idle long enough
+      const idleTime = Date.now() - this.idleStartTime;
+      if (idleTime >= AUDIO.CONFIG.WARNING_IDLE_TIME_MS) {
+        this.audioManager.playWarning();
+      }
     }
   }
+
+   private checkDeath(): void {
+     if (this.player.isBelowScreen(this.cameras.main.scrollY, this.gameHeight)) {
+       const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
+       const score = this.difficultyManager.getPlatformHeight(pixelHeight);
+       this.audioManager.stopAll();
+       this.audioManager.playGameOver();
+       this.scene.start('GameOverScene', { score });
+     }
+   }
 }

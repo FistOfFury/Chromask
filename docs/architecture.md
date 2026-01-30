@@ -14,6 +14,7 @@ graph TD
     GameScene --> ColorSystem
     GameScene --> PlatformSpawner
     GameScene --> DifficultyManager
+    GameScene --> AudioManager
     GameScene --> ColorIndicator
     ColorSystem --> Platform
     PlatformSpawner --> Platform
@@ -27,7 +28,7 @@ src/
 ├── main.ts              # Entry point, Phaser config
 ├── constants.ts         # All game constants
 ├── scenes/              # Phaser scenes
-│   ├── PreloadScene.ts  # Asset generation
+│   ├── PreloadScene.ts  # Asset loading (textures + audio)
 │   ├── GameScene.ts     # Main gameplay
 │   └── GameOverScene.ts # Death screen
 ├── entities/            # Game objects
@@ -36,7 +37,8 @@ src/
 ├── systems/             # Game logic systems
 │   ├── ColorSystem.ts   # Color state management
 │   ├── PlatformSpawner.ts # Platform generation
-│   └── DifficultyManager.ts # Difficulty scaling
+│   ├── DifficultyManager.ts # Difficulty scaling
+│   └── AudioManager.ts  # Sound effect management
 └── ui/                  # HUD components
     └── ColorIndicator.ts # RGB state display
 ```
@@ -96,6 +98,18 @@ The `DifficultyManager` tracks progress and adjusts gameplay:
 - `getScrollSpeed()` increases camera speed based on height
 - Platform color complexity increases at defined height thresholds
 - Spawner uses difficulty level to select appropriate color combinations
+
+### Audio System
+
+The `AudioManager` centralizes all sound effect playback:
+
+- **Jump sounds**: Random selection from 4 variations on successful jumps
+- **Platform landing**: Color-specific sounds when landing on matching platforms
+- **Near-miss detection**: "BRUH" sounds when player lands within 50px of death threshold
+- **Warning system**: Plays when player is idle in bottom 20% of screen for 2+ seconds
+- **Game events**: Start and game over sounds
+
+Audio assets are loaded in `PreloadScene` using keys defined in `AUDIO.FILES` constants.
 
 ## Key Design Decisions
 

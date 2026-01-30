@@ -30,6 +30,23 @@ Bitwise flags for additive color mixing. Primary colors (RED, GREEN, BLUE) are p
 const yellow = GameColor.RED | GameColor.GREEN;  // 0b001 | 0b010 = 0b011 = 3
 ```
 
+### COLOR_NAMES
+
+Maps `GameColor` enum values to string names for audio file keys.
+
+```typescript
+const COLOR_NAMES: Record<GameColor, string> = {
+  [GameColor.NONE]: 'NONE',
+  [GameColor.RED]: 'RED',
+  [GameColor.GREEN]: 'GREEN',
+  [GameColor.BLUE]: 'BLUE',
+  [GameColor.YELLOW]: 'YELLOW',
+  [GameColor.MAGENTA]: 'MAGENTA',
+  [GameColor.CYAN]: 'CYAN',
+  [GameColor.WHITE]: 'WHITE',
+};
+```
+
 ### COLOR_HEX
 
 Maps `GameColor` enum values to hex color codes for rendering.
@@ -114,6 +131,34 @@ const HELP_DIALOG = {
   TITLE_FONT_SIZE: '24px',        // Title size
   BODY_FONT_SIZE: '16px',         // Body text size
   LINE_HEIGHT: 1.4,               // Text line spacing
+};
+```
+
+### AUDIO Constants
+
+```typescript
+const AUDIO = {
+  KEYS: {
+    JUMP: ['sfx-jump', 'sfx-jump-yahhh', 'sfx-jump-whooo', 'sfx-jump-yipi'],
+    PLATFORM_HIT: 'sfx-platform-hit',  // Suffixed with color name
+    GAME_START: 'sfx-game-start',
+    GAME_OVER: 'sfx-game-over',
+    BRUH: ['sfx-bruh1', 'sfx-bruh2', 'sfx-bruh3'],
+    WARNING: 'sfx-warning',
+  },
+  FILES: {
+    // Maps sound keys to file paths (relative to public/)
+    'sfx-jump': 'assets/sounds/SFX JUMP.wav',
+    'sfx-platform-hit-RED': 'assets/sounds/SFX PF HIT - RED.wav',
+    // ... etc for all sound files
+  },
+  CONFIG: {
+    WARNING_COOLDOWN_MS: 3000,     // Minimum time between warnings
+    WARNING_IDLE_TIME_MS: 2000,    // Idle time before warning triggers
+    WARNING_ZONE_PERCENT: 0.2,     // Bottom 20% of screen
+    NEAR_MISS_THRESHOLD: 50,       // Pixels from death line
+    BRUH_COOLDOWN_MS: 2000,        // Minimum time between BRUH sounds
+  },
 };
 ```
 
@@ -396,6 +441,61 @@ Convert pixel height to platform count for display.
 const platformCount = difficultyManager.getPlatformHeight(heightClimbed);
 // Display: "Height: 10"
 ```
+
+---
+
+### AudioManager
+
+Centralized audio system managing all game sounds and background music.
+
+#### Constructor
+
+```typescript
+new AudioManager(scene: Phaser.Scene)
+```
+
+#### Methods
+
+**`playJump(): void`**
+
+Play a random jump sound from 4 available options.
+
+```typescript
+audioManager.playJump();  // Plays one of: jump, yahhh, whooo, yipi
+```
+
+**`playPlatformHit(color: GameColor): void`**
+
+Play color-specific platform landing sound.
+
+```typescript
+audioManager.playPlatformHit(GameColor.RED);  // Plays "SFX PF HIT - RED"
+```
+
+**`playGameStart(): void`**
+
+Play game start sound. Called when GameScene starts.
+
+**`playGameOver(): void`**
+
+Play game over sound. Called when player dies.
+
+**`playBruh(): void`**
+
+Play random BRUH sound (close call/near-miss). Has 2-second cooldown.
+
+```typescript
+// Triggered when player lands within 50px of death threshold
+audioManager.playBruh();
+```
+
+**`playWarning(): void`**
+
+Play warning sound when player is idle near screen bottom. Has 3-second cooldown.
+
+**`stopAll(): void`**
+
+Stop all sounds and background music. Called on game over.
 
 ---
 

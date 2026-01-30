@@ -214,3 +214,65 @@ export const HELP_DIALOG = {
   /** Line spacing */
   LINE_HEIGHT: 1.4,
 } as const;
+
+// =============================================================================
+// AUDIO
+// =============================================================================
+
+/** Maps GameColor enum values to string names for sound file keys */
+export const COLOR_NAMES: Record<GameColor, string> = {
+  [GameColor.NONE]: 'NONE',
+  [GameColor.RED]: 'RED',
+  [GameColor.GREEN]: 'GREEN',
+  [GameColor.BLUE]: 'BLUE',
+  [GameColor.YELLOW]: 'YELLOW',
+  [GameColor.MAGENTA]: 'MAGENTA',
+  [GameColor.CYAN]: 'CYAN',
+  [GameColor.WHITE]: 'WHITE',
+};
+
+export const AUDIO = {
+  // Sound keys for Phaser
+  KEYS: {
+    JUMP: ['sfx-jump', 'sfx-jump-yahhh', 'sfx-jump-whooo', 'sfx-jump-yipi'],
+    PLATFORM_HIT: 'sfx-platform-hit', // Will be suffixed with color name
+    GAME_START: 'sfx-game-start',
+    GAME_OVER: 'sfx-game-over',
+    COLOR_TOGGLE: 'sfx-color-toggle',
+    BRUH: ['sfx-bruh1', 'sfx-bruh2', 'sfx-bruh3'],
+    WARNING: 'sfx-warning',
+    MUSIC: 'sfx-music',
+  },
+  // File paths (relative to public/)
+  FILES: {
+    'sfx-jump': 'assets/sounds/SFX JUMP.wav',
+    'sfx-jump-yahhh': 'assets/sounds/SFX JUMP YAHHH.wav',
+    'sfx-jump-whooo': 'assets/sounds/SFX JUMP WHOOO.wav',
+    'sfx-jump-yipi': 'assets/sounds/SFX JUMP YIPI.wav',
+    'sfx-platform-hit-RED': 'assets/sounds/SFX PF HIT - RED.wav',
+    'sfx-platform-hit-GREEN': 'assets/sounds/SFX PF HIT - GREEN.wav',
+    'sfx-platform-hit-BLUE': 'assets/sounds/SFX PF HIT - BLUE.wav',
+    'sfx-platform-hit-YELLOW': 'assets/sounds/SFX PF HIT - YELLOW.wav',
+    'sfx-platform-hit-MAGENTA': 'assets/sounds/SFX PF HIT - MAGENTA.wav',
+    'sfx-platform-hit-CYAN': 'assets/sounds/SFX PF HIT - CYAN.wav',
+    'sfx-platform-hit-WHITE': 'assets/sounds/SFX PF HIT - WHITE.wav',
+    'sfx-game-start': 'assets/sounds/SFX GAME START.wav',
+    'sfx-game-over': 'assets/sounds/SFX GAME OVER.wav',
+    'sfx-color-toggle': 'assets/sounds/SFX COLOR TOGGLE ON_OFF.wav',
+    'sfx-bruh1': 'assets/sounds/SFX BRUH1.wav',
+    'sfx-bruh2': 'assets/sounds/SFX BRUH2.wav',
+    'sfx-bruh3': 'assets/sounds/SFX BRUH3.wav',
+    'sfx-warning': 'assets/sounds/SFX APPROACHING THE BOTTOM WARNING.wav',
+    'sfx-music': 'assets/sounds/SFX SCROLL SPEED INCREASE.wav',
+  },
+  // Configuration
+  CONFIG: {
+    MUSIC_MIN_RATE: 1.0,
+    MUSIC_MAX_RATE: 1.5,
+    WARNING_COOLDOWN_MS: 3000,
+    WARNING_IDLE_TIME_MS: 2000,
+    WARNING_ZONE_PERCENT: 0.2, // Bottom 20% of screen
+    NEAR_MISS_THRESHOLD: 50, // Pixels from death line
+    BRUH_COOLDOWN_MS: 2000,
+  },
+} as const;
