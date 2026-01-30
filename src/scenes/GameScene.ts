@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME, CAMERA } from '../constants';
+import { GAME } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
   private colorKeys!: { red: Phaser.Input.Keyboard.Key; green: Phaser.Input.Keyboard.Key; blue: Phaser.Input.Keyboard.Key };
 
   private highestY: number = 0;
+  private forcedScrollY: number = 0;
   private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -72,11 +73,11 @@ export class GameScene extends Phaser.Scene {
   private setupPlayer(): void {
     this.player = new Player(this, GAME.WIDTH / 2, GAME.HEIGHT - 100);
     this.highestY = this.player.y;
+    this.forcedScrollY = this.player.y - GAME.HEIGHT / 2;
   }
 
   private setupCamera(): void {
-    this.cameras.main.startFollow(this.player, true, 0, 1);
-    this.cameras.main.setDeadzone(0, CAMERA.DEADZONE_HEIGHT);
+    this.cameras.main.scrollY = this.player.y - GAME.HEIGHT / 2;
   }
 
   private setupUI(): void {
@@ -96,11 +97,11 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.platforms);
   }
 
-  update(_time: number, _delta: number): void {
+  update(_time: number, delta: number): void {
     this.handleInput();
     this.updateColorToggles();
     this.updatePlatformSolidity();
-    this.updateCamera();
+    this.updateCamera(delta);
     this.updateSpawning();
     this.updateScore();
     this.checkDeath();
@@ -148,15 +149,21 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private updateCamera(): void {
+  private updateCamera(delta: number): void {
     if (this.player.y < this.highestY) {
       this.highestY = this.player.y;
-    } else {
-      this.cameras.main.scrollY = Math.min(
-        this.cameras.main.scrollY,
-        this.highestY - 200
-      );
     }
+
+    const heightClimbed = this.difficultyManager.getHeightClimbed(this.highestY);
+    const scrollSpeed = this.difficultyManager.getScrollSpeed(heightClimbed);
+    
+    this.forcedScrollY -= scrollSpeed * (delta / 1000);
+
+    const targetScrollY = this.player.y - GAME.HEIGHT / 2;
+    const ratchetedScroll = Math.min(targetScrollY, this.cameras.main.scrollY);
+    const finalScroll = Math.min(ratchetedScroll, this.forcedScrollY);
+    
+    this.cameras.main.scrollY = finalScroll;
   }
 
   private updateSpawning(): void {
