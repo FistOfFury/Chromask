@@ -15,9 +15,9 @@ const config: Phaser.Types.Core.GameConfig = {
     autoRound: true,
   },
   render: {
-    antialias: true,
+    antialias: false,
     roundPixels: true,
-    pixelArt: false,
+    pixelArt: true,
   },
   input: {
     keyboard: true,
