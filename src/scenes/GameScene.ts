@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME } from '../constants';
+import { GAME, PLATFORM, PLAYER } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -61,23 +61,25 @@ export class GameScene extends Phaser.Scene {
 
   private setupSystems(): void {
     this.colorSystem = new ColorSystem();
-    this.colorSystem.toggleRed();
 
     this.platforms = this.physics.add.staticGroup();
     this.platformSpawner = new PlatformSpawner(this, this.platforms);
     this.platformSpawner.createInitialPlatforms();
 
-    this.difficultyManager = new DifficultyManager(GAME.HEIGHT - 100);
+    const playerStartY = GAME.HEIGHT - PLATFORM.HEIGHT - PLAYER.HEIGHT / 2;
+    this.difficultyManager = new DifficultyManager(playerStartY);
   }
 
   private setupPlayer(): void {
-    this.player = new Player(this, GAME.WIDTH / 2, GAME.HEIGHT - 100);
+    const groundTop = GAME.HEIGHT - PLATFORM.HEIGHT;
+    const playerY = groundTop - PLAYER.HEIGHT / 2 - 1;
+    this.player = new Player(this, GAME.WIDTH / 2, playerY);
     this.highestY = this.player.y;
-    this.forcedScrollY = this.player.y - GAME.HEIGHT / 2;
+    this.forcedScrollY = 0;
   }
 
   private setupCamera(): void {
-    this.cameras.main.scrollY = this.player.y - GAME.HEIGHT / 2;
+    this.cameras.main.scrollY = 0;
   }
 
   private setupUI(): void {
@@ -94,12 +96,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupCollision(): void {
-    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.player, this.platforms, (_player, platformObj) => {
+      const platform = platformObj as Platform;
+      platform.markContacted();
+    });
   }
 
   update(_time: number, delta: number): void {
     this.handleInput();
-    this.updateColorToggles();
+    this.updateColorFromKeys();
     this.updatePlatformSolidity();
     this.updateCamera(delta);
     this.updateSpawning();
@@ -127,17 +132,12 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private updateColorToggles(): void {
-    if (Phaser.Input.Keyboard.JustDown(this.colorKeys.red)) {
-      this.colorSystem.toggleRed();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.colorKeys.green)) {
-      this.colorSystem.toggleGreen();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.colorKeys.blue)) {
-      this.colorSystem.toggleBlue();
-    }
-
+  private updateColorFromKeys(): void {
+    const red = this.colorKeys.red.isDown;
+    const green = this.colorKeys.green.isDown;
+    const blue = this.colorKeys.blue.isDown;
+    
+    this.colorSystem.setColors(red, green, blue);
     this.colorIndicator.update(this.colorSystem);
   }
 

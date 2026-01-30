@@ -5,16 +5,10 @@ export class ColorSystem {
   private greenEnabled = false;
   private blueEnabled = false;
 
-  toggleRed(): void {
-    this.redEnabled = !this.redEnabled;
-  }
-
-  toggleGreen(): void {
-    this.greenEnabled = !this.greenEnabled;
-  }
-
-  toggleBlue(): void {
-    this.blueEnabled = !this.blueEnabled;
+  setColors(red: boolean, green: boolean, blue: boolean): void {
+    this.redEnabled = red;
+    this.greenEnabled = green;
+    this.blueEnabled = blue;
   }
 
   isRedEnabled(): boolean {
