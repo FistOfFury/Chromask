@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GameColor, COLOR_HEX, PLATFORM, PLAYER, AUDIO } from '../constants';
+import { ColorSwapPipeline } from '../systems/ColorSwapPipeline';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -26,7 +27,15 @@ export class PreloadScene extends Phaser.Scene {
   create(): void {
     this.createTextures();
     this.createAnimations();
+    this.registerPipelines();
     this.scene.start('GameScene');
+  }
+
+  private registerPipelines(): void {
+    const renderer = this.game.renderer;
+    if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
+      renderer.pipelines.addPostPipeline('ColorSwapPipeline', ColorSwapPipeline);
+    }
   }
 
   private createTextures(): void {
@@ -111,7 +120,7 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private createPlayerTexture(graphics: Phaser.GameObjects.Graphics): void {
-    this.createFlatRectangle(graphics, PLAYER.WIDTH, PLAYER.HEIGHT, 0xEEEEEE, 'player');
+    this.createFlatRectangle(graphics, PLAYER.WIDTH, PLAYER.HEIGHT, 0x9988DD, 'player');
   }
 
   private createFlatRectangle(graphics: Phaser.GameObjects.Graphics, width: number, height: number, color: number, key: string): void {

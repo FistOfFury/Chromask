@@ -267,6 +267,7 @@ export class GameScene extends Phaser.Scene {
     
     this.colorSystem.setColors(red, green, blue);
     this.colorIndicator.update(this.colorSystem);
+    this.player.setActiveColor(this.colorSystem.getActiveColor());
   }
 
   private updateHelpDialog(): void {

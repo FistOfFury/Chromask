@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { PLAYER, CharacterDefinition, CHARACTER, VISUAL } from '../constants';
+import { PLAYER, CharacterDefinition, CHARACTER, VISUAL, GameColor, COLOR_HEX } from '../constants';
 import { Shadow } from './Shadow';
+import { ColorSwapPipeline } from '../systems/ColorSwapPipeline';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private currentCharacter: CharacterDefinition = CHARACTER.RUNNER;
@@ -9,6 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private leftPupil: Phaser.GameObjects.Ellipse | null = null;
   private rightPupil: Phaser.GameObjects.Ellipse | null = null;
   private shadow: Shadow;
+  private colorSwapPipeline: ColorSwapPipeline | null = null;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player-sprite');
@@ -135,6 +137,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.createEyes();
     } else {
       this.destroyEyes();
+    }
+
+    this.setupColorSwapPipeline(character);
+  }
+
+  private setupColorSwapPipeline(character: CharacterDefinition): void {
+    this.resetPostPipeline();
+    this.colorSwapPipeline = null;
+
+    if (character.colorSwap) {
+      this.setPostPipeline('ColorSwapPipeline');
+      const pipelines = this.getPostPipeline('ColorSwapPipeline');
+      const pipeline = Array.isArray(pipelines) ? pipelines[0] : pipelines;
+      if (pipeline instanceof ColorSwapPipeline) {
+        this.colorSwapPipeline = pipeline;
+        pipeline.setKeyHue(character.colorSwap.keyHue, character.colorSwap.hueRange);
+        pipeline.setGrayscale();
+      }
+    }
+  }
+
+  setActiveColor(color: GameColor): void {
+    if (!this.colorSwapPipeline) return;
+
+    if (color === GameColor.NONE) {
+      this.colorSwapPipeline.setGrayscale();
+    } else {
+      this.colorSwapPipeline.setTargetColor(COLOR_HEX[color]);
     }
   }
 
