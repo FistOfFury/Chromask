@@ -100,12 +100,50 @@ Color channels are controlled via keyboard input:
 
 Keys are **hold-based**, not toggle-based. The color is active only while the key is pressed. Releasing a key immediately disables that channel and recalculates the active color.
 
+## Sprite Color Feedback
+
+Characters can display the active color directly on their sprite using the `ColorSwapPipeline` WebGL shader. This creates immediate visual feedback linking the player's appearance to the current color state.
+
+### How It Works
+
+1. Characters define a `colorSwap` property with a target hue (0-360°) and detection range
+2. The shader identifies pixels within that hue range in the sprite
+3. Those pixels are recolored to match the active game color
+4. When no color is active (`GameColor.NONE`), affected pixels become grayscale
+
+### Character Configuration
+
+```typescript
+// Runner: blue mask (hue ~230°) changes to active color
+colorSwap: { keyHue: 230, hueRange: 30 }
+
+// Classic: purple body (hue ~252°) changes to active color
+colorSwap: { keyHue: 252, hueRange: 30 }
+
+// Cat: orange fur (hue ~38°) changes to active color
+colorSwap: { keyHue: 38, hueRange: 30 }
+```
+
+### Visual States
+
+| Active Color | Affected Sprite Pixels |
+|--------------|------------------------|
+| NONE | Grayscale (desaturated) |
+| RED | Cherry red (#FF0044) |
+| GREEN | Electric green (#00FF55) |
+| BLUE | Electric blue (#0088FF) |
+| YELLOW | Sunny yellow (#FFDD00) |
+| MAGENTA | Hot magenta (#FF00AA) |
+| CYAN | Cyan (#00FFFF) |
+| WHITE | Pure white (#FFFFFF) |
+
 ## Implementation Details
 
 The color system integrates with:
 
 - **Input handling:** Keyboard events update channel states via `setColors()`
 - **Physics:** Collision detection queries `isColorActive()` for each platform
-- **Rendering:** Visual feedback uses `getActiveColor()` to determine opacity and border style
+- **Platform rendering:** Visual feedback uses `getActiveColor()` to determine opacity and border style
+- **Sprite rendering:** `ColorSwapPipeline` shader recolors character pixels based on active color
 
 For full class implementation and method signatures, see the [API Reference](../api-reference.md).

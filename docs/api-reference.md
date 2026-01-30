@@ -196,10 +196,11 @@ const CHARACTER = {
     id: 'runner',
     name: 'Runner',
     texture: 'player-sprite',
-    scale: 2,
+    scale: 1.5,
     hasAnimations: true,
     hasEyes: false,
-    hitbox: { width: 24, height: 28, offsetX: 4, offsetY: 2 },
+    hitbox: { width: 24, height: 32, offsetX: 4, offsetY: 0 },
+    colorSwap: { keyHue: 230, hueRange: 30 },  // Blue mask
   },
   CLASSIC: {
     id: 'classic',
@@ -209,12 +210,24 @@ const CHARACTER = {
     hasAnimations: false,
     hasEyes: true,
     hitbox: { width: 24, height: 48, offsetX: 0, offsetY: 0 },
+    colorSwap: { keyHue: 252, hueRange: 30 },  // Purple body
+  },
+  CAT: {
+    id: 'cat',
+    name: 'Cat',
+    texture: 'cat-sprite',
+    scale: 1.5,
+    hasAnimations: true,
+    hasEyes: false,
+    hitbox: { width: 24, height: 20, offsetX: 4, offsetY: 8 },
+    colorSwap: { keyHue: 38, hueRange: 30 },  // Orange fur
   },
 };
 
 const CHARACTER_DEFINITIONS: CharacterDefinition[] = [
   CHARACTER.RUNNER,
   CHARACTER.CLASSIC,
+  CHARACTER.CAT,
 ];
 ```
 
@@ -353,6 +366,14 @@ Jump if grounded. Only works when `body.blocked.down` or `body.touching.down` is
 **`isBelowScreen(cameraScrollY: number, cameraHeight: number): boolean`**
 
 Check if player has fallen below visible area (game over condition).
+
+**`setActiveColor(color: GameColor): void`**
+
+Update the player sprite's color swap effect based on the active game color. If the character has a `colorSwap` configuration, the specified hue range in the sprite is replaced with the active color. When `GameColor.NONE`, the affected pixels become grayscale.
+
+```typescript
+player.setActiveColor(colorSystem.getActiveColor());
+```
 
 ---
 
@@ -532,6 +553,48 @@ Stop all sounds and background music. Called on game over.
 
 ---
 
+### ColorSwapPipeline
+
+WebGL PostFX pipeline that swaps pixels within a hue range to a target color. Used to colorize character sprites based on the active game color. Extends `Phaser.Renderer.WebGL.Pipelines.PostFXPipeline`.
+
+Registered in `PreloadScene` and applied to Player sprites via `setPostPipeline()`.
+
+#### Properties
+
+**`keyHue: number`** - The hue to detect (0-360 degrees).
+
+**`keyHueRange: number`** - Detection tolerance in degrees.
+
+**`isGrayscale: boolean`** - When true, matched pixels become grayscale instead of recolored.
+
+#### Methods
+
+**`setKeyHue(hue: number, range?: number): this`**
+
+Configure which hue to detect and replace. Default range is 30 degrees.
+
+```typescript
+pipeline.setKeyHue(230, 30);  // Detect blue hues (200-260°)
+```
+
+**`setTargetColor(hexColor: number): this`**
+
+Set the replacement color using a hex value. Disables grayscale mode.
+
+```typescript
+pipeline.setTargetColor(0xFF0044);  // Replace with red
+```
+
+**`setGrayscale(): this`**
+
+Enable grayscale mode. Matched pixels become desaturated.
+
+```typescript
+pipeline.setGrayscale();  // For GameColor.NONE state
+```
+
+---
+
 ### HelpDialog
 
 Displays help overlay with controls and color combinations. Extends `Phaser.GameObjects.Container`.
@@ -636,8 +699,14 @@ interface CharacterDefinition {
     offsetX: number;       // X offset from sprite origin
     offsetY: number;       // Y offset from sprite origin
   };
+  colorSwap?: {            // Optional color swap shader config
+    keyHue: number;        // Hue to detect (0-360 degrees)
+    hueRange: number;      // Detection tolerance (+/- degrees)
+  };
 }
 ```
+
+The `colorSwap` property enables the ColorSwapPipeline shader effect. When present, pixels within the specified hue range are dynamically recolored to match the player's active game color. This creates visual feedback linking the character to the current color state.
 
 **Example:**
 ```typescript
@@ -649,6 +718,7 @@ const myCharacter: CharacterDefinition = {
   hasAnimations: true,
   hasEyes: false,
   hitbox: { width: 20, height: 40, offsetX: 6, offsetY: 4 },
+  colorSwap: { keyHue: 200, hueRange: 25 },  // Swap blue-ish pixels
 };
 ```
 

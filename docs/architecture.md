@@ -9,6 +9,7 @@ graph TD
     main[main.ts] --> PreloadScene
     main --> GameScene
     main --> GameOverScene
+    PreloadScene --> ColorSwapPipeline
     GameScene --> Player
     GameScene --> Platform
     GameScene --> ColorSystem
@@ -17,6 +18,8 @@ graph TD
     GameScene --> AudioManager
     GameScene --> ColorIndicator
     ColorSystem --> Platform
+    ColorSystem --> Player
+    Player --> ColorSwapPipeline
     PlatformSpawner --> Platform
     DifficultyManager --> PlatformSpawner
 ```
@@ -28,7 +31,7 @@ src/
 ├── main.ts              # Entry point, Phaser config
 ├── constants.ts         # All game constants
 ├── scenes/              # Phaser scenes
-│   ├── PreloadScene.ts  # Asset loading (textures + audio)
+│   ├── PreloadScene.ts  # Asset loading (textures + audio + pipelines)
 │   ├── GameScene.ts     # Main gameplay
 │   └── GameOverScene.ts # Death screen
 ├── entities/            # Game objects
@@ -36,6 +39,7 @@ src/
 │   └── Platform.ts      # Platform with color state
 ├── systems/             # Game logic systems
 │   ├── ColorSystem.ts   # Color state management
+│   ├── ColorSwapPipeline.ts # WebGL shader for sprite recoloring
 │   ├── PlatformSpawner.ts # Platform generation
 │   ├── DifficultyManager.ts # Difficulty scaling
 │   └── AudioManager.ts  # Sound effect management
@@ -89,6 +93,17 @@ Platform solidity is determined by color matching:
 5. Phaser's physics engine handles the actual collision response
 
 This creates the core mechanic: players must activate the correct colors to land on platforms.
+
+### Sprite Color Swap
+
+The `ColorSwapPipeline` provides visual feedback by recoloring parts of character sprites based on the active color:
+
+1. Characters define a `colorSwap` config with a target hue and range (e.g., Runner's blue mask at 230°)
+2. When `Player.setActiveColor()` is called, the pipeline updates its target color
+3. The WebGL shader detects pixels within the hue range and replaces them with the active color
+4. When `GameColor.NONE`, affected pixels become grayscale
+
+This creates immediate visual feedback linking the character's appearance to the current color state.
 
 ### Difficulty Scaling
 
