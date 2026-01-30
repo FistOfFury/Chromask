@@ -1,0 +1,131 @@
+/**
+ * Chromask Game Constants
+ * All game configuration values in one place
+ */
+
+// =============================================================================
+// COLOR SYSTEM
+// =============================================================================
+
+/**
+ * GameColor uses bitwise flags for additive color mixing.
+ * RED=1, GREEN=2, BLUE=4
+ * Combinations are OR'd together: YELLOW = RED | GREEN = 3
+ */
+export enum GameColor {
+  NONE    = 0b000,  // 0 - no platforms solid
+  RED     = 0b001,  // 1
+  GREEN   = 0b010,  // 2
+  BLUE    = 0b100,  // 4
+  YELLOW  = 0b011,  // 3 (R + G)
+  MAGENTA = 0b101,  // 5 (R + B)
+  CYAN    = 0b110,  // 6 (G + B)
+  WHITE   = 0b111,  // 7 (R + G + B)
+}
+
+/** Hex color values for rendering */
+export const COLOR_HEX: Record<GameColor, number> = {
+  [GameColor.NONE]:    0x333333, // Dark gray (for UI only)
+  [GameColor.RED]:     0xFF3333,
+  [GameColor.GREEN]:   0x33FF33,
+  [GameColor.BLUE]:    0x3333FF,
+  [GameColor.YELLOW]:  0xFFFF33,
+  [GameColor.MAGENTA]: 0xFF33FF,
+  [GameColor.CYAN]:    0x33FFFF,
+  [GameColor.WHITE]:   0xFFFFFF,
+};
+
+// =============================================================================
+// PLAYER PHYSICS
+// =============================================================================
+
+export const PLAYER = {
+  /** Horizontal movement speed (pixels/second) */
+  MOVE_SPEED: 300,
+  /** Jump velocity (negative = up) */
+  JUMP_VELOCITY: -500,
+  /** Gravity applied to player (pixels/second^2) */
+  GRAVITY: 800,
+  /** Player hitbox dimensions */
+  WIDTH: 32,
+  HEIGHT: 32,
+} as const;
+
+// =============================================================================
+// PLATFORM CONFIGURATION
+// =============================================================================
+
+export const PLATFORM = {
+  /** Default platform dimensions */
+  WIDTH: 100,
+  HEIGHT: 20,
+  /** Horizontal spacing between platforms */
+  MIN_GAP_X: 60,
+  MAX_GAP_X: 200,
+  /** Vertical spacing between platforms */
+  MIN_GAP_Y: 60,
+  MAX_GAP_Y: 120,
+} as const;
+
+// =============================================================================
+// DIFFICULTY PROGRESSION
+// =============================================================================
+
+export const DIFFICULTY = {
+  // Scroll speed (camera push)
+  INITIAL_SCROLL_SPEED: 0,      // No forced scroll at start
+  MAX_SCROLL_SPEED: 100,        // pixels/second
+  SCROLL_ACCELERATION: 0.5,     // per second
+  
+  // Platform spacing
+  INITIAL_MAX_GAP_Y: 80,
+  FINAL_MAX_GAP_Y: 150,
+  
+  // Platform size
+  INITIAL_PLATFORM_WIDTH: 120,
+  FINAL_PLATFORM_WIDTH: 60,
+  
+  // Timeline (in pixels of height climbed)
+  PHASE_2_HEIGHT: 1000,   // Secondary colors appear
+  PHASE_3_HEIGHT: 3000,   // White platforms appear
+  MAX_DIFFICULTY_HEIGHT: 8000,  // Full difficulty reached
+  
+  // Grace period before forced scroll
+  GRACE_PERIOD: 500,
+} as const;
+
+// =============================================================================
+// GAME CANVAS
+// =============================================================================
+
+export const GAME = {
+  WIDTH: 480,
+  HEIGHT: 720,
+  BACKGROUND_COLOR: 0x1a1a2e,
+} as const;
+
+// =============================================================================
+// CAMERA
+// =============================================================================
+
+export const CAMERA = {
+  /** Look-ahead buffer for camera deadzone */
+  DEADZONE_HEIGHT: 100,
+  /** How far ahead to spawn platforms */
+  SPAWN_AHEAD: 800,
+  /** How far behind to cull platforms */
+  CULL_BEHIND: 100,
+} as const;
+
+// =============================================================================
+// VISUAL SETTINGS
+// =============================================================================
+
+export const VISUAL = {
+  /** Alpha for non-solid (mismatched color) platforms */
+  PLATFORM_INACTIVE_ALPHA: 0.4,
+  /** Alpha for solid (matched color) platforms */
+  PLATFORM_ACTIVE_ALPHA: 1.0,
+  /** Duration of alpha transition in ms */
+  ALPHA_TRANSITION_MS: 100,
+} as const;
