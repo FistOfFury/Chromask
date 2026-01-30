@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Platform } from '../entities/Platform';
+import { Platform, PlatformConfig } from '../entities/Platform';
 import { GameColor, PLATFORM, DIFFICULTY, GAME, CAMERA } from '../constants';
 
 export class PlatformSpawner {
@@ -13,7 +13,7 @@ export class PlatformSpawner {
   constructor(scene: Phaser.Scene, platforms: Phaser.Physics.Arcade.StaticGroup) {
     this.scene = scene;
     this.platforms = platforms;
-    this.lastSpawnY = GAME.HEIGHT - 100;
+    this.lastSpawnY = GAME.HEIGHT - PLATFORM.HEIGHT;
     this.lastSpawnX = GAME.WIDTH / 2;
     this.lastColor = GameColor.RED;
     this.currentMaxGapY = DIFFICULTY.INITIAL_MAX_GAP_Y;
@@ -46,8 +46,8 @@ export class PlatformSpawner {
     }
   }
 
-  private createPlatform(x: number, y: number, color: GameColor): Platform {
-    const platform = new Platform(this.scene, x, y, color);
+  private createPlatform(x: number, y: number, color: GameColor, config?: PlatformConfig): Platform {
+    const platform = new Platform(this.scene, x, y, color, config);
     this.platforms.add(platform);
     return platform;
   }
@@ -128,7 +128,10 @@ export class PlatformSpawner {
   }
 
   createInitialPlatforms(): void {
-    this.createPlatform(GAME.WIDTH / 2, GAME.HEIGHT - 50, GameColor.RED);
+    this.createPlatform(GAME.WIDTH / 2, GAME.HEIGHT - PLATFORM.HEIGHT / 2, GameColor.NONE, {
+      width: GAME.WIDTH,
+      alwaysSolid: true,
+    });
     this.spawnPlatformsAbove(GAME.HEIGHT);
   }
 

@@ -31,6 +31,11 @@ export class PreloadScene extends Phaser.Scene {
       graphics.fillRoundedRect(0, 0, PLATFORM.WIDTH, PLATFORM.HEIGHT, 4);
       graphics.generateTexture(`platform_${color}`, PLATFORM.WIDTH, PLATFORM.HEIGHT);
     }
+
+    graphics.clear();
+    graphics.fillStyle(0x888888, 1);
+    graphics.fillRect(0, 0, PLATFORM.WIDTH, PLATFORM.HEIGHT);
+    graphics.generateTexture(`platform_${GameColor.NONE}`, PLATFORM.WIDTH, PLATFORM.HEIGHT);
   }
 
   private createPlayerTexture(graphics: Phaser.GameObjects.Graphics): void {
