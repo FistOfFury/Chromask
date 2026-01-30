@@ -36,14 +36,14 @@ Maps `GameColor` enum values to hex color codes for rendering.
 
 ```typescript
 const COLOR_HEX: Record<GameColor, number> = {
-  [GameColor.RED]:     0xFF3333,
-  [GameColor.GREEN]:   0x33FF33,
-  [GameColor.BLUE]:    0x3333FF,
-  [GameColor.YELLOW]:  0xFFFF33,
-  [GameColor.MAGENTA]: 0xFF33FF,
-  [GameColor.CYAN]:    0x33FFFF,
-  [GameColor.WHITE]:   0xFFFFFF,
-  [GameColor.NONE]:    0x333333,  // Dark gray (UI only)
+  [GameColor.RED]:     0xFF0044, // Bright cherry red
+  [GameColor.GREEN]:   0x00FF55, // Electric green
+  [GameColor.BLUE]:    0x0088FF, // Electric blue
+  [GameColor.YELLOW]:  0xFFDD00, // Sunny yellow
+  [GameColor.MAGENTA]: 0xFF00AA, // Hot magenta
+  [GameColor.CYAN]:    0x00FFFF, // Cyan
+  [GameColor.WHITE]:   0xFFFFFF, // Pure white
+  [GameColor.NONE]:    0x888888, // Light gray (UI only)
 };
 ```
 
