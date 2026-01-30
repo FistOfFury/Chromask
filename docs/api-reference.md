@@ -120,10 +120,14 @@ Thomas Was Alone style shadow - soft, elongated shadows extending from entities 
 
 **`update(x: number, y: number, width: number, height: number, isGrounded: boolean, cameraScrollY: number): void`**
 
-Update shadow position and visibility. Shadow extends from entity to bottom of screen. Shadow only renders when `isGrounded` is true.
+Update shadow position and visibility. Shadow extends from entity to bottom of screen. Pass `isGrounded=true` to always render (player), or check grounded state for other entities.
 
 ```typescript
-shadow.update(this.x, this.y, width, height, isGrounded, camera.scrollY);
+// Player shadow - always render
+shadow.update(this.x, this.y, width, height, true, camera.scrollY);
+
+// Platform shadow - only render when contacted
+shadow.update(this.x, this.y, width, height, this.isContacted(), camera.scrollY);
 ```
 
 **`setDepth(depth: number): void`**

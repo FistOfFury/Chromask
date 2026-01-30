@@ -47,10 +47,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.leftPupil.setPosition(this.x - PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
     this.rightPupil.setPosition(this.x + PLAYER.WIDTH * 0.2, this.y + this.eyeOffsetY);
 
-    const body = this.body as Phaser.Physics.Arcade.Body;
-    const isGrounded = body.blocked.down || body.touching.down;
     const camera = this.scene.cameras.main;
-    this.shadow.update(this.x, this.y, PLAYER.WIDTH, PLAYER.HEIGHT, isGrounded, camera.scrollY);
+    this.shadow.update(this.x, this.y, PLAYER.WIDTH, PLAYER.HEIGHT, true, camera.scrollY);
   }
 
   moveLeft(): void {
