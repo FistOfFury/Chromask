@@ -105,7 +105,7 @@ const VISUAL = {
   PLATFORM_ACTIVE_ALPHA: 1.0,     // Alpha for solid platforms
   ALPHA_TRANSITION_MS: 150,       // Transition duration
   SHADOW_ALPHA: 0.08,             // Very soft shadow (Thomas Was Alone style)
-  SHADOW_LIGHT_ANGLE: 45,         // Light source angle (45 = top-right, shadow down-left)
+  SHADOW_LIGHT_ANGLE: 30,         // Light source angle (30 = gentle diagonal, shadow down-left)
   SHADOW_SPREAD: 15,              // Shadow spread at the end (perspective width)
 };
 ```
@@ -184,29 +184,29 @@ If true, platform ignores color matching (e.g., starting floor).
 
 #### Methods
 
-**`setSolid(isSolid: boolean, camera?: Phaser.Cameras.Scene2D.Camera): void`**
+**`setSolid(isSolid: boolean): void`**
 
-Enable or disable collision. Updates visual alpha and border visibility. Shadow is only rendered if platform is visible on screen (within camera bounds with 50px margin). No effect if `alwaysSolid` is true or platform has been contacted.
+Enable or disable collision. Updates visual alpha and border visibility. No effect if `alwaysSolid` is true or platform has been contacted.
 
 ```typescript
-platform.setSolid(colorSystem.isColorActive(platform.platformColor), this.cameras.main);
+platform.setSolid(colorSystem.isColorActive(platform.platformColor));
 ```
-
-**`isOnScreen(camera: Phaser.Cameras.Scene2D.Camera): boolean`**
-
-Check if platform is within camera bounds (with 50px margin).
 
 **`updateShadow(camera?: Phaser.Cameras.Scene2D.Camera): void`**
 
-Update shadow rendering. Shadow only renders if platform is on screen.
+Update shadow rendering. Shadow only renders if platform is on screen AND has been contacted (player has landed on it).
+
+```typescript
+platform.updateShadow(this.cameras.main);
+```
 
 **`markContacted(): void`**
 
-Called when player first lands on platform. Makes platform permanently solid and removes dashed border.
+Called when player first lands on platform. Makes platform permanently solid, removes dashed border, and enables shadow rendering.
 
 **`isContacted(): boolean`**
 
-Returns true if platform has been landed on.
+Returns true if platform has been landed on (shadow will render).
 
 ---
 
