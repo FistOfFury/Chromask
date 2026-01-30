@@ -201,8 +201,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   isBelowScreen(cameraScrollY: number, cameraHeight: number): boolean {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    const bodyBottom = body.bottom;
     const deathThreshold = cameraScrollY + cameraHeight + 50;
-    return this.y > deathThreshold;
+    
+    if (bodyBottom > deathThreshold) {
+      return true;
+    }
+    
+    if (body.velocity.y > 0) {
+      return bodyBottom > deathThreshold - 50;
+    }
+    
+    return false;
   }
 
   destroy(fromScene?: boolean): void {
