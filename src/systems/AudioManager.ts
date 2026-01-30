@@ -5,7 +5,6 @@ export class AudioManager {
   private scene: Phaser.Scene;
   private backgroundMusic: Phaser.Sound.BaseSound | null = null;
   private lastBruhTime: number = 0;
-  private lastWarningTime: number = 0;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -49,18 +48,8 @@ export class AudioManager {
     this.scene.sound.play(randomKey);
   }
 
-  // Play warning sound with cooldown
-  playWarning(): void {
-    const now = Date.now();
-    if (now - this.lastWarningTime < AUDIO.CONFIG.WARNING_COOLDOWN_MS) return;
-    
-    this.lastWarningTime = now;
-    this.scene.sound.play(AUDIO.KEYS.WARNING);
-  }
-
-  // Start looping background music
   startBackgroundMusic(): void {
-    if (this.backgroundMusic) return; // Already playing
+    if (this.backgroundMusic) return;
     
     this.backgroundMusic = this.scene.sound.add(AUDIO.KEYS.MUSIC, {
       loop: true,

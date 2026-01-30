@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, AUDIO, STORAGE } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -36,9 +36,6 @@ export class GameScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text;
   private helpHint!: Phaser.GameObjects.Text;
   private startingY: number = 0;
-  private lastPlayerX: number = 0;
-  private lastPlayerY: number = 0;
-  private idleStartTime: number = 0;
 
   private get gameWidth(): number {
     return this.cameras.main.width;
@@ -65,9 +62,6 @@ export class GameScene extends Phaser.Scene {
     this.setupCamera();
     this.setupCollision();
     this.audioManager.playGameStart();
-    this.lastPlayerX = this.player.x;
-    this.lastPlayerY = this.player.y;
-    this.idleStartTime = Date.now();
   }
 
   private setupPhysicsWorld(): void {
@@ -215,7 +209,6 @@ export class GameScene extends Phaser.Scene {
      this.updateCamera(delta);
      this.updateSpawning();
      this.updateScore();
-     this.checkWarning();
      this.checkDeath();
    }
 
@@ -337,27 +330,6 @@ export class GameScene extends Phaser.Scene {
     const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
     const score = this.difficultyManager.getPlatformHeight(pixelHeight);
     this.scoreText.setText(`Height: ${score}`);
-  }
-
-  private checkWarning(): void {
-    const warningZoneY = this.cameras.main.scrollY + this.gameHeight * (1 - AUDIO.CONFIG.WARNING_ZONE_PERCENT);
-    const isInWarningZone = this.player.y > warningZoneY;
-    
-    // Check if player has moved
-    const hasMoved = this.player.x !== this.lastPlayerX || this.player.y !== this.lastPlayerY;
-    
-    if (hasMoved) {
-      // Reset idle timer on movement
-      this.lastPlayerX = this.player.x;
-      this.lastPlayerY = this.player.y;
-      this.idleStartTime = Date.now();
-    } else if (isInWarningZone) {
-      // Check if idle long enough
-      const idleTime = Date.now() - this.idleStartTime;
-      if (idleTime >= AUDIO.CONFIG.WARNING_IDLE_TIME_MS) {
-        this.audioManager.playWarning();
-      }
-    }
   }
 
   private checkDeath(): void {

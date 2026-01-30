@@ -259,7 +259,6 @@ export const AUDIO = {
     GAME_OVER: 'sfx-game-over',
     COLOR_TOGGLE: 'sfx-color-toggle',
     BRUH: ['sfx-bruh1', 'sfx-bruh2', 'sfx-bruh3'],
-    WARNING: 'sfx-warning',
     MUSIC: 'sfx-music',
   },
   // File paths (relative to public/)
@@ -281,17 +280,12 @@ export const AUDIO = {
     'sfx-bruh1': 'assets/sounds/SFX BRUH1.wav',
     'sfx-bruh2': 'assets/sounds/SFX BRUH2.wav',
     'sfx-bruh3': 'assets/sounds/SFX BRUH3.wav',
-    'sfx-warning': 'assets/sounds/SFX APPROACHING THE BOTTOM WARNING.wav',
     'sfx-music': 'assets/sounds/SFX SCROLL SPEED INCREASE.wav',
   },
   // Configuration
   CONFIG: {
     MUSIC_MIN_RATE: 1.0,
     MUSIC_MAX_RATE: 1.5,
-    WARNING_COOLDOWN_MS: 3000,
-    WARNING_IDLE_TIME_MS: 2000,
-    WARNING_ZONE_PERCENT: 0.2, // Bottom 20% of screen
-    NEAR_MISS_THRESHOLD: 50, // Pixels from death line
     BRUH_COOLDOWN_MS: 2000,
   },
 } as const;
