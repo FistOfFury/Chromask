@@ -9,6 +9,7 @@ import { AudioManager } from '../systems/AudioManager';
 import { ColorIndicator } from '../ui/ColorIndicator';
 import { HelpDialog } from '../ui/HelpDialog';
 import { CharacterSelector } from '../ui/CharacterSelector';
+import { PauseMenu } from '../ui/PauseMenu';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -20,6 +21,8 @@ export class GameScene extends Phaser.Scene {
   private colorIndicator!: ColorIndicator;
   private helpDialog!: HelpDialog;
   private characterSelector!: CharacterSelector;
+  private pauseMenu!: PauseMenu;
+  private isPaused: boolean = false;
   private currentCharacterIndex: number = 0;
   private hasJumped: boolean = false;
 
@@ -28,6 +31,7 @@ export class GameScene extends Phaser.Scene {
    private colorKeys!: { red: Phaser.Input.Keyboard.Key; green: Phaser.Input.Keyboard.Key; blue: Phaser.Input.Keyboard.Key };
    private helpKey!: Phaser.Input.Keyboard.Key;
    private tabKey!: Phaser.Input.Keyboard.Key;
+   private escKey!: Phaser.Input.Keyboard.Key;
 
   private highestY: number = 0;
   private forcedScrollY: number = 0;
@@ -89,8 +93,9 @@ export class GameScene extends Phaser.Scene {
 
     this.helpKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.FORWARD_SLASH);
     this.tabKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TAB);
+    this.escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-    this.input.keyboard!.addCapture('W,A,S,D,SPACE,UP,DOWN,LEFT,RIGHT,ONE,TWO,THREE,FORWARD_SLASH,TAB');
+    this.input.keyboard!.addCapture('W,A,S,D,SPACE,UP,DOWN,LEFT,RIGHT,ONE,TWO,THREE,FORWARD_SLASH,TAB,ESC');
   }
 
   private setupSystems(): void {
@@ -142,6 +147,11 @@ export class GameScene extends Phaser.Scene {
     this.colorIndicator = new ColorIndicator(this, 20, 20);
     this.helpDialog = new HelpDialog(this);
     this.characterSelector = new CharacterSelector(this, 20, 55);
+    this.pauseMenu = new PauseMenu(
+      this,
+      () => this.resumeGame(),
+      () => this.exitToMenu()
+    );
 
     this.scoreText = this.add.text(this.gameWidth - 20, 20, '0', {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -205,6 +215,12 @@ export class GameScene extends Phaser.Scene {
    }
 
    update(_time: number, delta: number): void {
+     this.handlePauseInput();
+     
+     if (this.isPaused) {
+       return;
+     }
+     
      this.handleInput();
      this.handleCharacterSwitch();
      this.updateColorFromKeys();
@@ -214,6 +230,35 @@ export class GameScene extends Phaser.Scene {
      this.updateSpawning();
      this.updateScore();
      this.checkDeath();
+   }
+   
+   private handlePauseInput(): void {
+     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+       if (this.isPaused) {
+         this.resumeGame();
+       } else {
+         this.pauseGame();
+       }
+     }
+   }
+   
+   private pauseGame(): void {
+     this.isPaused = true;
+     this.physics.pause();
+     this.pauseMenu.show();
+   }
+   
+   private resumeGame(): void {
+     this.isPaused = false;
+     this.physics.resume();
+     this.pauseMenu.hide();
+   }
+   
+   private exitToMenu(): void {
+     this.isPaused = false;
+     this.physics.resume();
+     this.audioManager.stopAll();
+     this.scene.start('MainMenuScene');
    }
 
    private handleInput(): void {
