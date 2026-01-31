@@ -14,6 +14,7 @@ export class HelpDialog extends Phaser.GameObjects.Container {
       '',
       'Move        Arrow Keys / WASD',
       'Jump        Up / W / Space',
+      'Pause       ESC',
       '',
       'COLORS',
       '',

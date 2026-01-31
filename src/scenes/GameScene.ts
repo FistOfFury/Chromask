@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL, DifficultyLevel, SoundSettings, DEFAULT_SOUND_SETTINGS } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL, DifficultyLevel, DIFFICULTY_LABELS, SoundSettings, DEFAULT_SOUND_SETTINGS } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -42,6 +42,7 @@ export class GameScene extends Phaser.Scene {
   private floorStarted: boolean = false;
   private maxScrollSpeed: number = 0;
   private scoreText!: Phaser.GameObjects.Text;
+  private difficultyText!: Phaser.GameObjects.Text;
   private helpHint!: Phaser.GameObjects.Text;
   private startingY: number = 0;
 
@@ -210,6 +211,16 @@ export class GameScene extends Phaser.Scene {
     this.scoreText.setScrollFactor(0);
     this.scoreText.setDepth(100);
 
+    this.difficultyText = this.add.text(this.gameWidth - 20, 52, DIFFICULTY_LABELS[this.difficulty], {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontSize: '14px',
+      color: '#999999',
+      resolution: window.devicePixelRatio * 2,
+    });
+    this.difficultyText.setOrigin(1, 0);
+    this.difficultyText.setScrollFactor(0);
+    this.difficultyText.setDepth(100);
+
     const hintY = this.gameHeight - PLATFORM.HEIGHT - 30;
     this.helpHint = this.add.text(this.gameWidth - 20, hintY, 'press / for help', {
       fontFamily: 'Arial, sans-serif',
@@ -227,6 +238,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setSize(gameSize.width, gameSize.height);
     this.physics.world.setBounds(0, -100000, gameSize.width, 200000);
     this.scoreText.setX(gameSize.width - 20);
+    this.difficultyText.setX(gameSize.width - 20);
   }
 
    private setupCollision(): void {
