@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL, DifficultyLevel, DIFFICULTY_LABELS, SoundSettings, DEFAULT_SOUND_SETTINGS } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL, DifficultyLevel, DIFFICULTY_LABELS, SoundSettings, DEFAULT_SOUND_SETTINGS, COMBO } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
 import { PlatformSpawner } from '../systems/PlatformSpawner';
 import { DifficultyManager } from '../systems/DifficultyManager';
+import { ComboSystem } from '../systems/ComboSystem';
 import { AudioManager } from '../systems/AudioManager';
 import { ColorIndicator } from '../ui/ColorIndicator';
+import { ComboIndicator } from '../ui/ComboIndicator';
 import { HelpDialog } from '../ui/HelpDialog';
 import { CharacterSelector } from '../ui/CharacterSelector';
 import { PauseMenu } from '../ui/PauseMenu';
@@ -18,8 +20,10 @@ export class GameScene extends Phaser.Scene {
   private colorSystem!: ColorSystem;
   private platformSpawner!: PlatformSpawner;
   private difficultyManager!: DifficultyManager;
+  private comboSystem!: ComboSystem;
   private audioManager!: AudioManager;
   private colorIndicator!: ColorIndicator;
+  private comboIndicator!: ComboIndicator;
   private helpDialog!: HelpDialog;
   private characterSelector!: CharacterSelector;
   private pauseMenu!: PauseMenu;
@@ -109,6 +113,7 @@ export class GameScene extends Phaser.Scene {
 
   private setupSystems(): void {
     this.colorSystem = new ColorSystem();
+    this.comboSystem = new ComboSystem();
 
     this.platforms = this.physics.add.staticGroup();
     this.platformSpawner = new PlatformSpawner(this, this.platforms, this.difficulty);
@@ -177,6 +182,7 @@ export class GameScene extends Phaser.Scene {
      this.colorIndicator = new ColorIndicator(this, 20, 20);
      this.helpDialog = new HelpDialog(this);
      this.characterSelector = new CharacterSelector(this, 20, 55);
+     this.comboIndicator = new ComboIndicator(this, 20, 55);
      
      this.settingsDialog = new SettingsDialog(
        this,
@@ -241,36 +247,43 @@ export class GameScene extends Phaser.Scene {
     this.difficultyText.setX(gameSize.width - 20);
   }
 
-   private setupCollision(): void {
-     this.physics.add.collider(this.player, this.platforms, (playerObj, platformObj) => {
-       const player = playerObj as Player;
-       const platform = platformObj as Platform;
-       const playerBody = player.body as Phaser.Physics.Arcade.Body;
-       const platformBody = platform.body as Phaser.Physics.Arcade.StaticBody;
+  private setupCollision(): void {
+    this.physics.add.collider(this.player, this.platforms, (playerObj, platformObj) => {
+      const player = playerObj as Player;
+      const platform = platformObj as Platform;
+      const playerBody = player.body as Phaser.Physics.Arcade.Body;
+      const platformBody = platform.body as Phaser.Physics.Arcade.StaticBody;
 
-       if (playerBody.blocked.down || playerBody.touching.down) {
-         const playerBottom = playerBody.bottom;
-         const platformTop = platformBody.top;
-         
-          if (playerBottom <= platformTop + 5 && playerBody.velocity.y >= 0) {
-            // Check for near-miss (close call) landing
-            if (!platform.isContacted()) {
-              const deathThreshold = this.cameras.main.scrollY + this.gameHeight + 50;
-              const nearMissThreshold = deathThreshold - 50; // 50px safety margin
-              
-              if (player.y > nearMissThreshold) {
-                // Near-miss! Play BRUH instead of platform hit
-                this.audioManager.playBruh();
-              } else {
-                // Normal landing
-                this.audioManager.playPlatformHit(platform.platformColor);
-              }
+      if (playerBody.blocked.down || playerBody.touching.down) {
+        const playerBottom = playerBody.bottom;
+        const platformTop = platformBody.top;
+        
+        if (playerBottom <= platformTop + 5 && playerBody.velocity.y >= 0) {
+          // Check if this is a NEW platform
+          const isNewPlatform = !platform.isContacted();
+          
+          if (isNewPlatform) {
+            // Combo: landed on new platform
+            this.comboSystem.onNewPlatformLand();
+            
+            // Audio feedback (existing logic)
+            const deathThreshold = this.cameras.main.scrollY + this.gameHeight + 50;
+            const nearMissThreshold = deathThreshold - 50;
+            if (player.y > nearMissThreshold) {
+              this.audioManager.playBruh();
+            } else {
+              this.audioManager.playPlatformHit(platform.platformColor);
             }
-            platform.markContacted();
+          } else {
+            // Landed on visited platform - break combo
+            this.comboSystem.onComboBreak();
           }
-       }
-     });
-   }
+          
+          platform.markContacted();
+        }
+      }
+    });
+  }
 
    update(_time: number, delta: number): void {
      this.handlePauseInput();
@@ -284,6 +297,7 @@ export class GameScene extends Phaser.Scene {
      this.updateColorFromKeys();
      this.updateHelpDialog();
      this.updatePlatformSolidity();
+     this.updateCombo();
      this.updateCamera(delta);
      this.updateSpawning();
      this.updateScore();
@@ -354,15 +368,15 @@ export class GameScene extends Phaser.Scene {
      }
 
       if (jump) {
-        const body = this.player.body as Phaser.Physics.Arcade.Body;
-        const canJump = body.blocked.down || body.touching.down;
-        if (canJump) {
+        const jumpMultiplier = this.comboSystem.getJumpMultiplier();
+        const didJump = this.player.jump(jumpMultiplier);
+        if (didJump) {
+          this.comboSystem.onJumpStart();
           this.audioManager.playJump();
-        }
-        this.player.jump();
-        if (!this.hasJumped) {
-          this.hasJumped = true;
-          this.characterSelector.hide();
+          if (!this.hasJumped) {
+            this.hasJumped = true;
+            this.characterSelector.hide();
+          }
         }
       }
    }
@@ -413,6 +427,18 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private updateCombo(): void {
+    const comboCount = this.comboSystem.getComboCount();
+    this.comboIndicator.update(comboCount);
+    
+    if (this.comboSystem.isComboActive()) {
+      const maxScale = this.comboSystem.getScalePulse();
+      this.player.startPulse(maxScale, COMBO.PULSE_FREQUENCY);
+    } else {
+      this.player.stopPulse();
+    }
+  }
+
   private updateCamera(delta: number): void {
     if (this.player.y < this.highestY) {
       this.highestY = this.player.y;
@@ -461,6 +487,8 @@ export class GameScene extends Phaser.Scene {
 
   private checkDeath(): void {
     if (this.player.isBelowScreen(this.cameras.main.scrollY, this.gameHeight)) {
+      this.player.stopPulse();
+      this.comboSystem.reset();
       this.saveSelectedCharacterIndex();
       const pixelHeight = this.difficultyManager.getHeightClimbed(this.highestY);
       const score = this.difficultyManager.getPlatformHeight(pixelHeight);

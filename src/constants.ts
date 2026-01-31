@@ -424,3 +424,24 @@ export const AUDIO = {
     SUFFER_LANDING_INTERVAL: 10,
   },
 } as const;
+
+// =============================================================================
+// COMBO SYSTEM
+// =============================================================================
+
+export const COMBO = {
+  /** Number of consecutive new platform lands to START combo */
+  ACTIVATION_THRESHOLD: 3,
+  /** Jump velocity multiplier per combo land after threshold */
+  JUMP_MULTIPLIER_PER_LAND: 0.25,
+  /** Maximum jump velocity multiplier (1.0 = no boost, 2.0 = double) */
+  MAX_JUMP_MULTIPLIER: 2.0,
+  /** Scale pulse at combo threshold (1.02 = 102%) */
+  BASE_SCALE_PULSE: 1.02,
+  /** Additional scale per combo above threshold */
+  SCALE_PULSE_PER_COMBO: 0.01,
+  /** Maximum scale pulse (1.10 = 110%) */
+  MAX_SCALE_PULSE: 1.10,
+  /** Pulse frequency (beats per second) */
+  PULSE_FREQUENCY: 8,
+} as const;

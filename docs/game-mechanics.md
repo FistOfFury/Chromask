@@ -99,6 +99,40 @@ The game increases in difficulty as the player climbs higher:
 
 The scroll speed gradually increases, forcing players to climb faster and make quicker color-switching decisions to survive.
 
+## Combo System
+
+The combo system rewards skilled players who consistently land on new platforms without mistakes.
+
+### How Combos Work
+
+1. **Building Combo**: Each time you land on a NEW platform (one you haven't touched before), your combo counter increments.
+2. **Combo Activation**: After 3 consecutive new-platform landings, the combo becomes active.
+3. **Combo Break**: Landing on a platform you've already visited resets the combo to zero.
+
+### Combo Rewards
+
+When combo is active (3+ consecutive lands):
+
+| Combo Count | Jump Multiplier | Scale Pulse |
+|-------------|-----------------|-------------|
+| 3 | 1.25x | 102% |
+| 4 | 1.50x | 103% |
+| 5 | 1.75x | 104% |
+| 6+ | 2.00x (max) | up to 110% |
+
+**Jump Bonus**: Each combo land after the 3rd adds 0.25x to your jump height, up to a maximum of 2x (double height).
+
+**Visual Feedback**: 
+- A "COMBO x#" indicator appears below the color boxes when combo is active
+- Your character pulses (grows and shrinks) with increasing intensity as the combo grows
+
+### Tips for Maintaining Combo
+
+- Plan your path to always land on new platforms
+- Use the enhanced jump height to reach platforms further away
+- Don't backtrack to platforms you've already visited
+- The combo resets when you die, so push for higher combos while you can!
+
 ## Scoring
 
 Score is based on the height climbed, measured in platform units. Each platform successfully reached adds to the player's score. Higher scores indicate greater mastery of the color-switching mechanic and platforming skills.

@@ -207,6 +207,22 @@ const AUDIO = {
 };
 ```
 
+### COMBO Constants
+
+```typescript
+const COMBO = {
+  ACTIVATION_THRESHOLD: 3,           // Consecutive new platform lands to start combo
+  JUMP_MULTIPLIER_PER_LAND: 0.25,    // Jump boost per combo land after threshold
+  MAX_JUMP_MULTIPLIER: 2.0,          // Maximum jump multiplier (2x base height)
+  BASE_SCALE_PULSE: 1.02,            // Scale pulse at combo threshold (102%)
+  SCALE_PULSE_PER_COMBO: 0.01,       // Additional scale per combo above threshold
+  MAX_SCALE_PULSE: 1.10,             // Maximum scale pulse (110%)
+  PULSE_FREQUENCY: 8,                // Pulse beats per second
+};
+```
+
+The combo system rewards consecutive landings on NEW platforms (not previously visited). After 3 consecutive new-platform landings, the combo activates and provides jump height bonuses.
+
 ### STORAGE Constants
 
 ```typescript
@@ -323,6 +339,82 @@ Disable all colors (returns to NONE).
 
 ---
 
+### ComboSystem
+
+Tracks consecutive new-platform landings and calculates jump modifiers and vibration amplitude.
+
+#### Methods
+
+**`onJumpStart(): void`**
+
+Call when player initiates a jump. Marks that a jump is in progress for combo tracking.
+
+```typescript
+comboSystem.onJumpStart();
+```
+
+**`onNewPlatformLand(): void`**
+
+Call when player lands on a NEW platform (one they haven't touched before). Increments combo count if a jump was in progress.
+
+```typescript
+if (!platform.isContacted()) {
+  comboSystem.onNewPlatformLand();
+}
+```
+
+**`onComboBreak(): void`**
+
+Call when player lands on a visited platform or falls without landing. Resets combo to zero.
+
+```typescript
+comboSystem.onComboBreak();
+```
+
+**`getComboCount(): number`**
+
+Returns current combo count. Returns 0 if combo is not active (fewer than 3 consecutive lands).
+
+```typescript
+const count = comboSystem.getComboCount();  // 0 if inactive, 3+ if active
+```
+
+**`isComboActive(): boolean`**
+
+Returns true if combo is active (3+ consecutive new-platform landings).
+
+```typescript
+if (comboSystem.isComboActive()) {
+  // Show combo UI, apply vibration
+}
+```
+
+**`getJumpMultiplier(): number`**
+
+Returns jump velocity multiplier. Returns 1.0 if combo inactive, up to 2.0 at max combo.
+
+Formula: `1 + (comboCount - 2) * 0.25`, capped at 2.0
+
+```typescript
+const multiplier = comboSystem.getJumpMultiplier();
+player.jump(multiplier);  // 1.0x to 2.0x jump height
+```
+
+**`getScalePulse(): number`**
+
+Returns scale pulse multiplier. Returns 1.0 if combo inactive, up to 1.10 (110%) at max.
+
+```typescript
+const maxScale = comboSystem.getScalePulse();
+player.startPulse(maxScale, COMBO.PULSE_FREQUENCY);
+```
+
+**`reset(): void`**
+
+Reset combo state (for new game).
+
+---
+
 ### VISUAL Constants
 
 ```typescript
@@ -409,9 +501,33 @@ Apply rightward velocity.
 
 Stop horizontal movement (set velocity to 0).
 
-**`jump(): void`**
+**`jump(velocityMultiplier?: number): boolean`**
 
-Jump if grounded. Only works when `body.blocked.down` or `body.touching.down` is true.
+Jump if grounded. Only works when `body.blocked.down` or `body.touching.down` is true. Returns `true` if jump succeeded, `false` otherwise.
+
+The optional `velocityMultiplier` parameter (default 1.0) scales the jump velocity. Used by the combo system to provide jump height bonuses.
+
+```typescript
+player.jump();        // Normal jump (1.0x), returns true if grounded
+player.jump(1.5);     // 50% higher jump
+player.jump(2.0);     // Double height jump (max combo)
+```
+
+**`startPulse(maxScale: number, frequency: number): void`**
+
+Start a scale pulsing effect using Phaser tweens. The player pulses between base scale and `maxScale` at `frequency` beats per second.
+
+```typescript
+player.startPulse(1.05, 8);  // Pulse to 105% at 8Hz
+```
+
+**`stopPulse(): void`**
+
+Stop the pulse effect and restore base scale.
+
+```typescript
+player.stopPulse();
+```
 
 **`isBelowScreen(cameraScrollY: number, cameraHeight: number): boolean`**
 
@@ -772,6 +888,30 @@ characterSelector.update('Classic', 'player');
 **`hide(): void`**
 
 Hide the character selector (called after first jump).
+
+---
+
+### ComboIndicator
+
+UI component displaying the current combo count. Extends `Phaser.GameObjects.Container`.
+
+Positioned below the ColorIndicator. Only visible when combo is active (3+ consecutive new-platform landings).
+
+#### Constructor
+
+```typescript
+new ComboIndicator(scene: Phaser.Scene, x: number, y: number)
+```
+
+#### Methods
+
+**`update(comboCount: number): void`**
+
+Update the displayed combo count. Shows indicator when count >= 3, hides otherwise.
+
+```typescript
+comboIndicator.update(comboSystem.getComboCount());
+```
 
 ---
 
