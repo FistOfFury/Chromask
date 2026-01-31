@@ -358,6 +358,8 @@ export const STORAGE = {
   SELECTED_DIFFICULTY: 'chromask_selected_difficulty',
   /** LocalStorage key for sound settings */
   SOUND_SETTINGS: 'chromask_sound_settings',
+  /** LocalStorage key for first-time tutorial seen flag */
+  FIRST_TIME_SEEN: 'chromask_first_time_seen',
 } as const;
 
 // =============================================================================

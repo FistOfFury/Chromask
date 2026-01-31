@@ -13,6 +13,7 @@ import { HelpDialog } from '../ui/HelpDialog';
 import { CharacterSelector } from '../ui/CharacterSelector';
 import { PauseMenu } from '../ui/PauseMenu';
 import { SettingsDialog } from '../ui/SettingsDialog';
+import { TutorialDialog } from '../ui/TutorialDialog';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -85,6 +86,18 @@ export class GameScene extends Phaser.Scene {
     this.setupCollision();
     this.audioManager.playGameStart();
     this.audioManager.playBackgroundMusic();
+    this.showTutorialIfFirstTime();
+  }
+
+  private showTutorialIfFirstTime(): void {
+    if (TutorialDialog.hasSeenTutorial()) {
+      return;
+    }
+
+    this.physics.pause();
+    new TutorialDialog(this, () => {
+      this.physics.resume();
+    });
   }
 
   private setupPhysicsWorld(): void {
