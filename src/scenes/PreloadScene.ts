@@ -8,6 +8,8 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload(): void {
+    this.load.image('wordmark', 'wordmark.png');
+
     this.load.spritesheet('player-sprite', 'assets/runner.png', {
       frameWidth: 32,
       frameHeight: 32,
@@ -28,7 +30,7 @@ export class PreloadScene extends Phaser.Scene {
     this.createTextures();
     this.createAnimations();
     this.registerPipelines();
-    this.scene.start('GameScene');
+    this.scene.start('MainMenuScene');
   }
 
   private registerPipelines(): void {

@@ -613,6 +613,42 @@ Hide the dialog.
 
 ---
 
+### PauseMenu
+
+In-game pause menu overlay with Continue/Settings/Exit options. Extends `Phaser.GameObjects.Container`.
+
+Triggered by pressing ESC during gameplay. Pauses physics and game updates while visible.
+
+#### Constructor
+
+```typescript
+new PauseMenu(scene: Phaser.Scene, onContinue: () => void, onExit: () => void)
+```
+
+#### Methods
+
+**`show(): void`**
+
+Display the pause menu and pause the game.
+
+**`hide(): void`**
+
+Hide the pause menu.
+
+**`isVisible(): boolean`**
+
+Returns true if the pause menu is currently displayed.
+
+#### Buttons
+
+| Button | State | Action |
+|--------|-------|--------|
+| Continue | Active | Calls `onContinue` callback, resumes game |
+| Settings | Disabled | Grayed out, non-interactive (placeholder) |
+| Exit | Active | Calls `onExit` callback, returns to main menu |
+
+---
+
 ### CharacterSelector
 
 UI component displaying the current character preview and name. Extends `Phaser.GameObjects.Container`.
@@ -641,9 +677,38 @@ Hide the character selector (called after first jump).
 
 ---
 
+### MainMenuScene
+
+Main menu scene with title screen and navigation options. Extends `Phaser.Scene`.
+
+Displays the game wordmark logo and menu buttons. First scene shown after asset loading.
+
+#### Scene Key
+
+`'MainMenuScene'`
+
+#### UI Elements
+
+| Element | Description |
+|---------|-------------|
+| Wordmark | Game logo image (`wordmark.png`) displayed at top |
+| Play Now | Active button, starts GameScene |
+| Leaderboard | Disabled button (placeholder) |
+| Settings | Disabled button (placeholder) |
+| Footer Link | "Global Game Jam 2026" text, opens GitHub repository |
+
+#### Button Style
+
+Minecraft-inspired blocky buttons with 3D bevel effect:
+- Active: Dark gray background (0x555555) with highlight/shadow edges
+- Disabled: Lighter gray (0x888888) at 50% alpha
+- Hover: Slightly lighter background on active buttons
+
+---
+
 ### PreloadScene
 
-Phaser scene that loads and initializes game assets. Runs before GameScene.
+Phaser scene that loads and initializes game assets. Runs before MainMenuScene.
 
 #### Methods
 
