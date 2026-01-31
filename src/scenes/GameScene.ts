@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL } from '../constants';
+import { PLATFORM, PLAYER, CHARACTER_DEFINITIONS, STORAGE, VISUAL, DifficultyLevel, SoundSettings, DEFAULT_SOUND_SETTINGS } from '../constants';
 import { Player } from '../entities/Player';
 import { Platform } from '../entities/Platform';
 import { ColorSystem } from '../systems/ColorSystem';
@@ -10,6 +10,7 @@ import { ColorIndicator } from '../ui/ColorIndicator';
 import { HelpDialog } from '../ui/HelpDialog';
 import { CharacterSelector } from '../ui/CharacterSelector';
 import { PauseMenu } from '../ui/PauseMenu';
+import { SettingsDialog } from '../ui/SettingsDialog';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -22,9 +23,12 @@ export class GameScene extends Phaser.Scene {
   private helpDialog!: HelpDialog;
   private characterSelector!: CharacterSelector;
   private pauseMenu!: PauseMenu;
+  private settingsDialog!: SettingsDialog;
+  private soundSettings!: SoundSettings;
   private isPaused: boolean = false;
   private currentCharacterIndex: number = 0;
   private hasJumped: boolean = false;
+  private difficulty: DifficultyLevel = DifficultyLevel.MEDIUM;
 
    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
    private wasd!: { up: Phaser.Input.Keyboard.Key; left: Phaser.Input.Keyboard.Key; right: Phaser.Input.Keyboard.Key };
@@ -54,17 +58,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-     // Reset all scene state for new game (scene object is reused by Phaser)
-     this.maxScrollSpeed = 0;
+       // Reset all scene state for new game (scene object is reused by Phaser)
+       this.maxScrollSpeed = 0;
 
-    // Randomize shadow angle for this game (light from above, random horizontal direction)
-    const angleRange = VISUAL.SHADOW_ANGLE_MAX - VISUAL.SHADOW_ANGLE_MIN;
-    VISUAL.SHADOW_LIGHT_ANGLE = VISUAL.SHADOW_ANGLE_MIN + Math.random() * angleRange;
+        // Read difficulty and sound settings from scene data (passed from MainMenuScene)
+        const sceneData = this.scene.settings.data as { difficulty?: DifficultyLevel; soundSettings?: SoundSettings } | undefined;
+        this.difficulty = sceneData?.difficulty ?? DifficultyLevel.MEDIUM;
+        this.soundSettings = sceneData?.soundSettings ?? DEFAULT_SOUND_SETTINGS;
 
-    this.setupPhysicsWorld();
-    this.setupInput();
-    this.setupSystems();
-    this.audioManager = new AudioManager(this);
+      // Randomize shadow angle for this game (light from above, random horizontal direction)
+     const angleRange = VISUAL.SHADOW_ANGLE_MAX - VISUAL.SHADOW_ANGLE_MIN;
+     VISUAL.SHADOW_LIGHT_ANGLE = VISUAL.SHADOW_ANGLE_MIN + Math.random() * angleRange;
+
+      this.setupPhysicsWorld();
+      this.setupInput();
+      this.setupSystems();
+      this.audioManager = new AudioManager(this, this.soundSettings);
     this.setupUI();  // Setup UI first (characterSelector needed for setupPlayer)
     this.setupPlayer();
     this.setupCamera();
@@ -102,11 +111,11 @@ export class GameScene extends Phaser.Scene {
     this.colorSystem = new ColorSystem();
 
     this.platforms = this.physics.add.staticGroup();
-    this.platformSpawner = new PlatformSpawner(this, this.platforms);
+    this.platformSpawner = new PlatformSpawner(this, this.platforms, this.difficulty);
     this.platformSpawner.createInitialPlatforms(this.gameWidth, this.gameHeight);
 
     const playerStartY = this.gameHeight - PLATFORM.HEIGHT - PLAYER.HEIGHT / 2;
-    this.difficultyManager = new DifficultyManager(playerStartY);
+    this.difficultyManager = new DifficultyManager(playerStartY, this.difficulty);
   }
 
   private setupPlayer(): void {
@@ -143,15 +152,32 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.scrollY = 0;
   }
 
-  private setupUI(): void {
-    this.colorIndicator = new ColorIndicator(this, 20, 20);
-    this.helpDialog = new HelpDialog(this);
-    this.characterSelector = new CharacterSelector(this, 20, 55);
-    this.pauseMenu = new PauseMenu(
-      this,
-      () => this.resumeGame(),
-      () => this.exitToMenu()
-    );
+   private setupUI(): void {
+     this.colorIndicator = new ColorIndicator(this, 20, 20);
+     this.helpDialog = new HelpDialog(this);
+     this.characterSelector = new CharacterSelector(this, 20, 55);
+     
+     this.settingsDialog = new SettingsDialog(
+       this,
+       this.difficulty,
+       this.soundSettings,
+       (_difficulty, newSoundSettings) => {
+         this.soundSettings = newSoundSettings;
+         this.audioManager.updateSoundSettings(newSoundSettings);
+         localStorage.setItem(STORAGE.SOUND_SETTINGS, JSON.stringify(newSoundSettings));
+         if (this.isPaused) {
+           this.pauseMenu.show();
+         }
+       },
+       true
+     );
+     
+     this.pauseMenu = new PauseMenu(
+       this,
+       () => this.resumeGame(),
+       () => this.exitToMenu(),
+       () => this.openSettings()
+     );
 
     this.scoreText = this.add.text(this.gameWidth - 20, 20, '0', {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -254,12 +280,17 @@ export class GameScene extends Phaser.Scene {
      this.pauseMenu.hide();
    }
    
-   private exitToMenu(): void {
-     this.isPaused = false;
-     this.physics.resume();
-     this.audioManager.stopAll();
-     this.scene.start('MainMenuScene');
-   }
+    private exitToMenu(): void {
+      this.isPaused = false;
+      this.physics.resume();
+      this.audioManager.stopAll();
+      this.scene.start('MainMenuScene');
+    }
+
+    private openSettings(): void {
+      this.pauseMenu.hide();
+      this.settingsDialog.show(this.difficulty, this.soundSettings, true);
+    }
 
    private handleInput(): void {
      const left = this.cursors.left.isDown || this.wasd.left.isDown;

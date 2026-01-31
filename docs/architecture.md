@@ -181,6 +181,34 @@ The camera scrolls upward continuously, driving the core loop:
 
 See `SPEC.md` section 3.3 for camera behavior details.
 
+## Difficulty System Flow
+
+```
+MainMenuScene                  GameScene                    Systems
+     │                              │                           │
+     ├─ Load from localStorage ─────┤                           │
+     │  (SELECTED_DIFFICULTY)       │                           │
+     │                              │                           │
+     ├─ SettingsDialog ────────────►│                           │
+     │  (user selection)            │                           │
+     │                              │                           │
+     ├─ Save to localStorage        │                           │
+     │                              │                           │
+     ├─ scene.start('GameScene', ──►│                           │
+     │    { difficulty })           │                           │
+     │                              ├─ Read from scene.data ───►│
+     │                              │                           │
+     │                              ├─ DifficultyManager(difficulty)
+     │                              │   └─ getScrollSpeed() applies multiplier
+     │                              │                           │
+     │                              └─ PlatformSpawner(difficulty)
+     │                                  ├─ getAvailableColors() phases
+     │                                  ├─ pickColor() repeat chance
+     │                                  └─ getMaxGapY() gap size
+```
+
+Difficulty is selected once in the main menu and persists for the session. It cannot be changed during gameplay.
+
 ## Performance Considerations
 
 - Platform culling removes off-screen objects to maintain performance

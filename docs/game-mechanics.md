@@ -105,6 +105,41 @@ Score is based on the height climbed, measured in platform units. Each platform 
 
 The game tracks the highest score achieved across sessions, encouraging players to improve their performance and climb higher with each attempt.
 
+## Difficulty Levels
+
+The game offers four difficulty levels, selectable from the main menu Settings:
+
+### Easy
+- **No rising floor** - Take your time to learn color combinations
+- Smaller gaps between platforms
+- Moderate color variety
+
+### Medium (Default)
+- Standard gameplay as originally designed
+- Floor rises gradually as you climb higher
+- Balanced color switching requirements
+
+### Hard
+- Floor rises 50% faster than normal
+- Colors appear earlier in progression
+- More frequent color switching required
+- Recommended for experienced players
+
+### Very Hard
+- Floor rises at double speed
+- 30% larger gaps between platforms
+- Rapid color changes with minimal repetition
+- Maximum challenge for skilled players
+
+### Changing Difficulty
+
+1. From the main menu, click **Settings**
+2. Select your preferred difficulty level
+3. Click **Close** to save your selection
+4. Start a new game - difficulty cannot be changed mid-game
+
+Your difficulty selection is saved and remembered between sessions.
+
 ## Additional Resources
 
 For complete design specifications, technical implementation details, and development roadmap, see [GAME_DESIGN.md](../GAME_DESIGN.md).

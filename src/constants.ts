@@ -36,6 +36,129 @@ export const COLOR_HEX: Record<GameColor, number> = {
 };
 
 // =============================================================================
+// DIFFICULTY SYSTEM
+// =============================================================================
+
+export enum DifficultyLevel {
+  EASY = 'easy',
+  MEDIUM = 'medium',
+  HARD = 'hard',
+  VERY_HARD = 'very_hard',
+}
+
+export interface DifficultyPreset {
+  scrollSpeedMultiplier: number;  // 0 = no scroll, 1 = normal, 2 = double
+  gapMultiplier: number;          // Multiplies platform vertical gap
+  sameColorChance: number;        // Probability of same color as previous (0-1)
+  colorPhaseMultiplier: number;   // Lower = colors appear earlier (harder)
+}
+
+export const DIFFICULTY_PRESETS: Record<DifficultyLevel, DifficultyPreset> = {
+  [DifficultyLevel.EASY]: {
+    scrollSpeedMultiplier: 0,      // No rising floor
+    gapMultiplier: 0.8,            // Smaller gaps
+    sameColorChance: 0.5,          // Moderate color repetition
+    colorPhaseMultiplier: 1.0,     // Normal color phases
+  },
+  [DifficultyLevel.MEDIUM]: {
+    scrollSpeedMultiplier: 1.0,    // Normal speed
+    gapMultiplier: 1.0,            // Normal gaps
+    sameColorChance: 0.7,          // High color repetition (matches current EASY_PHASE_SAME_COLOR_CHANCE)
+    colorPhaseMultiplier: 1.0,     // Normal color phases
+  },
+  [DifficultyLevel.HARD]: {
+    scrollSpeedMultiplier: 1.5,    // 50% faster
+    gapMultiplier: 1.0,            // Normal gaps
+    sameColorChance: 0.3,          // Low color repetition
+    colorPhaseMultiplier: 0.7,     // Colors appear 30% earlier
+  },
+  [DifficultyLevel.VERY_HARD]: {
+    scrollSpeedMultiplier: 2.0,    // Double speed
+    gapMultiplier: 1.3,            // 30% larger gaps
+    sameColorChance: 0.1,          // Very low color repetition
+    colorPhaseMultiplier: 0.5,     // Colors appear 50% earlier
+  },
+};
+
+export const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
+  [DifficultyLevel.EASY]: 'Easy',
+  [DifficultyLevel.MEDIUM]: 'Medium',
+  [DifficultyLevel.HARD]: 'Hard',
+  [DifficultyLevel.VERY_HARD]: 'Very Hard',
+};
+
+export const DIFFICULTY_DESCRIPTIONS: Record<DifficultyLevel, string> = {
+  [DifficultyLevel.EASY]: 'No time pressure. Take your time and learn the colors.',
+  [DifficultyLevel.MEDIUM]: 'Standard challenge. The floor rises steadily as you climb.',
+  [DifficultyLevel.HARD]: 'Faster floor, more color switching required.',
+  [DifficultyLevel.VERY_HARD]: 'Maximum challenge. Fast floor, rapid color changes, bigger gaps.',
+};
+
+// =============================================================================
+// SOUND SETTINGS
+// =============================================================================
+
+/**
+ * Sound mode determines how sounds are controlled
+ */
+export enum SoundMode {
+  ON = 'on',
+  OFF = 'off',
+  CUSTOM = 'custom',
+}
+
+/**
+ * Individual sound categories that can be toggled in custom mode
+ */
+export enum SoundCategory {
+  JUMP = 'jump',
+  LANDING = 'landing',
+  MUSIC = 'music',
+  UI = 'ui',
+}
+
+/**
+ * Sound settings configuration
+ */
+export interface SoundSettings {
+  mode: SoundMode;
+  custom: Record<SoundCategory, boolean>;
+}
+
+/**
+ * Default sound settings (all enabled)
+ */
+export const DEFAULT_SOUND_SETTINGS: SoundSettings = {
+  mode: SoundMode.ON,
+  custom: {
+    [SoundCategory.JUMP]: true,
+    [SoundCategory.LANDING]: true,
+    [SoundCategory.MUSIC]: true,
+    [SoundCategory.UI]: true,
+  },
+};
+
+/**
+ * Labels for sound categories in UI
+ */
+export const SOUND_CATEGORY_LABELS: Record<SoundCategory, string> = {
+  [SoundCategory.JUMP]: 'Jump',
+  [SoundCategory.LANDING]: 'Landing',
+  [SoundCategory.MUSIC]: 'Music',
+  [SoundCategory.UI]: 'UI Sounds',
+};
+
+/**
+ * Descriptions for sound categories
+ */
+export const SOUND_CATEGORY_DESCRIPTIONS: Record<SoundCategory, string> = {
+  [SoundCategory.JUMP]: 'Jump and voice sounds',
+  [SoundCategory.LANDING]: 'Platform landing sounds',
+  [SoundCategory.MUSIC]: 'Background music',
+  [SoundCategory.UI]: 'Game start, game over, color toggle',
+};
+
+// =============================================================================
 // CHARACTER DEFINITIONS
 // =============================================================================
 
@@ -217,6 +340,10 @@ export const VISUAL = {
 export const STORAGE = {
   /** LocalStorage key for selected character index */
   SELECTED_CHARACTER_INDEX: 'chromask_selected_character',
+  /** LocalStorage key for selected difficulty level */
+  SELECTED_DIFFICULTY: 'chromask_selected_difficulty',
+  /** LocalStorage key for sound settings */
+  SOUND_SETTINGS: 'chromask_sound_settings',
 } as const;
 
 // =============================================================================

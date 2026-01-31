@@ -30,6 +30,41 @@ Bitwise flags for additive color mixing. Primary colors (RED, GREEN, BLUE) are p
 const yellow = GameColor.RED | GameColor.GREEN;  // 0b001 | 0b010 = 0b011 = 3
 ```
 
+### DifficultyLevel
+
+Enum representing available difficulty levels.
+
+| Value | Key | Description |
+|-------|-----|-------------|
+| `'easy'` | EASY | No time pressure, floor doesn't rise |
+| `'medium'` | MEDIUM | Standard challenge (default) |
+| `'hard'` | HARD | Faster floor, more color switching |
+| `'very_hard'` | VERY_HARD | Maximum challenge |
+
+### DifficultyPreset
+
+Configuration object for each difficulty level.
+
+```typescript
+interface DifficultyPreset {
+  scrollSpeedMultiplier: number;  // 0 = no scroll, 1 = normal, 2 = double
+  gapMultiplier: number;          // Multiplies platform vertical gap
+  sameColorChance: number;        // Probability of same color (0-1)
+  colorPhaseMultiplier: number;   // Lower = colors appear earlier
+}
+```
+
+### DIFFICULTY_PRESETS
+
+Preset configurations for each difficulty level:
+
+| Difficulty | Scroll | Gap | Color Repeat | Color Phases |
+|------------|--------|-----|--------------|--------------|
+| EASY | 0x | 0.8x | 50% | Normal |
+| MEDIUM | 1x | 1x | 70% | Normal |
+| HARD | 1.5x | 1x | 30% | 30% earlier |
+| VERY_HARD | 2x | 1.3x | 10% | 50% earlier |
+
 ### COLOR_NAMES
 
 Maps `GameColor` enum values to string names for audio file keys.
@@ -174,6 +209,7 @@ const AUDIO = {
 ```typescript
 const STORAGE = {
   SELECTED_CHARACTER_INDEX: 'chromask_selected_character',  // localStorage key for character selection
+  SELECTED_DIFFICULTY: 'chromask_selected_difficulty',      // localStorage key for difficulty level
 };
 ```
 
@@ -186,6 +222,17 @@ const index = saved ? parseInt(saved, 10) : 0;
 
 // When switching or dying, save current selection
 localStorage.setItem(STORAGE.SELECTED_CHARACTER_INDEX, currentIndex.toString());
+```
+
+Difficulty selection is also persisted to localStorage and restored when the game starts. Players can change difficulty from the main menu Settings dialog.
+
+```typescript
+// On game start, load saved difficulty
+const saved = localStorage.getItem(STORAGE.SELECTED_DIFFICULTY);
+const difficulty = (saved as DifficultyLevel) || 'medium';
+
+// When changing difficulty, save selection
+localStorage.setItem(STORAGE.SELECTED_DIFFICULTY, selectedDifficulty);
 ```
 
 ### CHARACTER Constants
@@ -421,7 +468,13 @@ Returns true if platform has been landed on (shadow will render).
 
 ### PlatformSpawner
 
-Generates and manages platform lifecycle.
+Generates and manages platform lifecycle. Accepts a difficulty level parameter to adjust spawning behavior.
+
+#### Constructor
+
+```typescript
+new PlatformSpawner(scene: Phaser.Scene, difficulty?: DifficultyLevel)
+```
 
 #### Methods
 
@@ -466,7 +519,13 @@ Returns the platform group for collision detection.
 
 ### DifficultyManager
 
-Tracks progression and calculates difficulty parameters.
+Tracks progression and calculates difficulty parameters. Accepts a difficulty level parameter to adjust scroll speed and progression.
+
+#### Constructor
+
+```typescript
+new DifficultyManager(startY: number, difficulty?: DifficultyLevel)
+```
 
 #### Methods
 
@@ -480,7 +539,7 @@ const heightClimbed = difficultyManager.getHeightClimbed(player.y);
 
 **`getScrollSpeed(heightClimbed: number): number`**
 
-Calculate current forced scroll speed. Returns 0 before `FLOOR_START_HEIGHT`.
+Calculate current forced scroll speed. Returns 0 before `FLOOR_START_HEIGHT`. Applies difficulty multiplier to the base scroll speed.
 
 ```typescript
 const scrollSpeed = difficultyManager.getScrollSpeed(heightClimbed);
@@ -646,6 +705,42 @@ Returns true if the pause menu is currently displayed.
 | Continue | Active | Calls `onContinue` callback, resumes game |
 | Settings | Disabled | Grayed out, non-interactive (placeholder) |
 | Exit | Active | Calls `onExit` callback, returns to main menu |
+
+---
+
+### SettingsDialog
+
+Modal dialog for difficulty selection. Extends `Phaser.GameObjects.Container`.
+
+Displayed from the main menu Settings button. Allows players to choose their preferred difficulty level before starting a game.
+
+#### Constructor
+
+```typescript
+new SettingsDialog(scene: Phaser.Scene, initialDifficulty: DifficultyLevel, onClose: (selectedDifficulty: DifficultyLevel) => void)
+```
+
+#### Methods
+
+**`show(currentDifficulty?: DifficultyLevel): void`**
+
+Display the dialog. Optionally updates the selected difficulty.
+
+```typescript
+settingsDialog.show('hard');
+```
+
+**`hide(): void`**
+
+Hide the dialog.
+
+**`getSelectedDifficulty(): DifficultyLevel`**
+
+Get the currently selected difficulty level.
+
+```typescript
+const difficulty = settingsDialog.getSelectedDifficulty();  // 'easy' | 'medium' | 'hard' | 'very_hard'
+```
 
 ---
 

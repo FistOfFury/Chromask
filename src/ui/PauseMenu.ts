@@ -11,14 +11,16 @@ interface ButtonColors {
 export class PauseMenu extends Phaser.GameObjects.Container {
   private onContinue: () => void;
   private onExit: () => void;
+  private onSettings: () => void;
 
-  constructor(scene: Phaser.Scene, onContinue: () => void, onExit: () => void) {
+  constructor(scene: Phaser.Scene, onContinue: () => void, onExit: () => void, onSettings: () => void) {
     const centerX = scene.cameras.main.width / 2;
     const centerY = scene.cameras.main.height / 2;
     super(scene, centerX, centerY);
 
     this.onContinue = onContinue;
     this.onExit = onExit;
+    this.onSettings = onSettings;
 
     const { width, height } = scene.cameras.main;
 
@@ -41,7 +43,7 @@ export class PauseMenu extends Phaser.GameObjects.Container {
     const buttonSpacing = 60;
 
     this.createButton(scene, 0, -30, buttonWidth, buttonHeight, 'Continue', false, this.onContinue);
-    this.createButton(scene, 0, -30 + buttonSpacing, buttonWidth, buttonHeight, 'Settings', true);
+    this.createButton(scene, 0, -30 + buttonSpacing, buttonWidth, buttonHeight, 'Settings', false, this.onSettings);
     this.createButton(scene, 0, -30 + buttonSpacing * 2, buttonWidth, buttonHeight, 'Exit', false, this.onExit);
 
     scene.add.existing(this);

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { Platform, PlatformConfig } from '../entities/Platform';
-import { GameColor, PLATFORM, DIFFICULTY, CAMERA } from '../constants';
+import { GameColor, PLATFORM, DIFFICULTY, CAMERA, DifficultyLevel, DIFFICULTY_PRESETS, DifficultyPreset } from '../constants';
 
 const MAX_PLAYABLE_WIDTH = 600;
 const BASE_PLATFORM_WIDTH = 120;
@@ -8,6 +8,7 @@ const BASE_PLATFORM_WIDTH = 120;
 export class PlatformSpawner {
   private scene: Phaser.Scene;
   private platforms: Phaser.Physics.Arcade.StaticGroup;
+  private preset: DifficultyPreset;
   private lastSpawnY: number = 0;
   private lastSpawnX: number = 0;
   private lastColor: GameColor = GameColor.RED;
@@ -18,9 +19,10 @@ export class PlatformSpawner {
   private playableMaxX: number = 0;
   private platformWidth: number = BASE_PLATFORM_WIDTH;
 
-  constructor(scene: Phaser.Scene, platforms: Phaser.Physics.Arcade.StaticGroup) {
+  constructor(scene: Phaser.Scene, platforms: Phaser.Physics.Arcade.StaticGroup, difficulty: DifficultyLevel = DifficultyLevel.MEDIUM) {
     this.scene = scene;
     this.platforms = platforms;
+    this.preset = DIFFICULTY_PRESETS[difficulty];
   }
 
   private calculatePlayableZone(): void {
@@ -35,10 +37,13 @@ export class PlatformSpawner {
 
   private getAvailableColors(height: number): GameColor[] {
     const absHeight = Math.abs(height);
+    // Apply colorPhaseMultiplier - lower multiplier = colors appear earlier
+    const phase2Height = DIFFICULTY.PHASE_2_HEIGHT * this.preset.colorPhaseMultiplier;
+    const phase3Height = DIFFICULTY.PHASE_3_HEIGHT * this.preset.colorPhaseMultiplier;
 
-    if (absHeight < DIFFICULTY.PHASE_2_HEIGHT) {
+    if (absHeight < phase2Height) {
       return [GameColor.RED, GameColor.GREEN, GameColor.BLUE];
-    } else if (absHeight < DIFFICULTY.PHASE_3_HEIGHT) {
+    } else if (absHeight < phase3Height) {
       return [
         GameColor.RED,
         GameColor.GREEN,
@@ -74,7 +79,7 @@ export class PlatformSpawner {
   private pickColor(y: number): GameColor {
     const colors = this.getAvailableColors(y);
     
-    if (this.isEasyPhase(y) && Math.random() < DIFFICULTY.EASY_PHASE_SAME_COLOR_CHANCE) {
+    if (this.isEasyPhase(y) && Math.random() < this.preset.sameColorChance) {
       if (colors.includes(this.lastColor)) {
         return this.lastColor;
       }
@@ -101,7 +106,7 @@ export class PlatformSpawner {
     if (this.isEasyPhase(y)) {
       return DIFFICULTY.EASY_PHASE_MAX_GAP_Y;
     }
-    return this.currentMaxGapY;
+    return this.currentMaxGapY * this.preset.gapMultiplier;
   }
 
   spawnPlatformsAbove(currentY: number): void {
