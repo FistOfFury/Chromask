@@ -46,8 +46,21 @@ This binary solid/pass-through behavior creates the core challenge: players must
 | Hold Blue | 3 |
 | Switch Character | Tab (on ground, before first jump) |
 | Show Help | / (hold) |
+| Pause | ESC |
 
 Color keys can be held in any combination. Movement and jumping work independently of color selection, allowing players to move and switch colors simultaneously.
+
+## Pause Menu
+
+Pressing **ESC** during gameplay opens the pause menu, which freezes all game action including physics and the rising floor. The pause menu offers three options:
+
+| Option | Description |
+|--------|-------------|
+| Continue | Resume gameplay from where you paused |
+| Settings | (Coming soon) |
+| Exit | Return to the main menu |
+
+Press **ESC** again or click **Continue** to resume playing.
 
 ## Character Selection
 

@@ -7,9 +7,11 @@ Chromask is a vertical platformer built with Phaser 3 and TypeScript. The archit
 ```mermaid
 graph TD
     main[main.ts] --> PreloadScene
+    main --> MainMenuScene
     main --> GameScene
     main --> GameOverScene
     PreloadScene --> ColorSwapPipeline
+    MainMenuScene --> GameScene
     GameScene --> Player
     GameScene --> Platform
     GameScene --> ColorSystem
@@ -17,6 +19,7 @@ graph TD
     GameScene --> DifficultyManager
     GameScene --> AudioManager
     GameScene --> ColorIndicator
+    GameScene --> PauseMenu
     ColorSystem --> Platform
     ColorSystem --> Player
     Player --> ColorSwapPipeline
@@ -32,6 +35,7 @@ src/
 ├── constants.ts         # All game constants
 ├── scenes/              # Phaser scenes
 │   ├── PreloadScene.ts  # Asset loading (textures + audio + pipelines)
+│   ├── MainMenuScene.ts # Main menu with Play/Leaderboard/Settings
 │   ├── GameScene.ts     # Main gameplay
 │   └── GameOverScene.ts # Death screen
 ├── entities/            # Game objects
@@ -44,7 +48,10 @@ src/
 │   ├── DifficultyManager.ts # Difficulty scaling
 │   └── AudioManager.ts  # Sound effect management
 └── ui/                  # HUD components
-    └── ColorIndicator.ts # RGB state display
+    ├── ColorIndicator.ts # RGB state display
+    ├── HelpDialog.ts    # Controls help overlay
+    ├── CharacterSelector.ts # Character preview
+    └── PauseMenu.ts     # In-game pause menu
 ```
 
 ## Scene Flow
@@ -52,8 +59,10 @@ src/
 ```mermaid
 stateDiagram-v2
     [*] --> PreloadScene
-    PreloadScene --> GameScene: Assets ready
+    PreloadScene --> MainMenuScene: Assets ready
+    MainMenuScene --> GameScene: Play Now
     GameScene --> GameOverScene: Player dies
+    GameScene --> MainMenuScene: Exit (pause menu)
     GameOverScene --> GameScene: Restart
 ```
 

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME, PLAYER } from './constants';
 import { PreloadScene } from './scenes/PreloadScene';
+import { MainMenuScene } from './scenes/MainMenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 
@@ -29,7 +30,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [PreloadScene, GameScene, GameOverScene],
+  scene: [PreloadScene, MainMenuScene, GameScene, GameOverScene],
 };
 
 new Phaser.Game(config);
