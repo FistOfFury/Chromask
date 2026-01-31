@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="public/logo-128.png" alt="Chromask Logo" width="128" height="128" />
+  <img src="public/wordmark.png" alt="Chromask" width="400" />
 </p>
-
-# Chromask
 
 Endless vertical climber with additive color-mixing mechanics. Built with Phaser 3 + TypeScript.
 

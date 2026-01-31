@@ -53,14 +53,10 @@ export class MainMenuScene extends Phaser.Scene {
       }
     );
 
-    // Calculate button positions centered between title and footer
-    const titleBottom = height * 0.3;
-    const footerTop = height * 0.88;
-    const availableSpace = footerTop - titleBottom;
+    // Button positioning - fixed position below title
     const buttonHeight = 50;
     const buttonSpacing = 20;
-    const totalButtonsHeight = buttonHeight * 3 + buttonSpacing * 2;
-    const startY = titleBottom + (availableSpace - totalButtonsHeight) / 2 + buttonHeight / 2;
+    const startY = height * 0.52;
 
     this.createButton({
       x: width / 2,
@@ -77,15 +73,6 @@ export class MainMenuScene extends Phaser.Scene {
     this.createButton({
       x: width / 2,
       y: startY + buttonHeight + buttonSpacing,
-      width: 200,
-      height: buttonHeight,
-      text: 'Leaderboard',
-      disabled: true,
-    });
-
-    this.createButton({
-      x: width / 2,
-      y: startY + (buttonHeight + buttonSpacing) * 2,
       width: 200,
       height: buttonHeight,
       text: 'Settings',
@@ -150,7 +137,7 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private createWordmark(screenWidth: number, screenHeight: number): void {
-    const wordmark = this.add.image(screenWidth / 2, screenHeight * 0.2, 'wordmark');
+    const wordmark = this.add.image(screenWidth / 2, screenHeight * 0.32, 'wordmark');
     const maxWidth = screenWidth * 0.8;
     const scaleFactor = 0.7;
     if (wordmark.width > maxWidth) {
