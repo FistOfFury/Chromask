@@ -280,11 +280,25 @@ export class GameScene extends Phaser.Scene {
    
    private handlePauseInput(): void {
      if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+       if (this.settingsDialog.isVisible()) {
+         this.closeSettingsDialog();
+         return;
+       }
        if (this.isPaused) {
          this.resumeGame();
        } else {
          this.pauseGame();
        }
+     }
+   }
+   
+   private closeSettingsDialog(): void {
+     this.settingsDialog.hide();
+     this.soundSettings = this.settingsDialog.getSoundSettings();
+     this.audioManager.updateSoundSettings(this.soundSettings);
+     localStorage.setItem(STORAGE.SOUND_SETTINGS, JSON.stringify(this.soundSettings));
+     if (this.isPaused) {
+       this.pauseMenu.show();
      }
    }
    

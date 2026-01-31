@@ -811,4 +811,8 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
   getSelectedDifficulty(): DifficultyLevel {
     return this.selectedDifficulty;
   }
+
+  getSoundSettings(): SoundSettings {
+    return { ...this.soundSettings, custom: { ...this.soundSettings.custom } };
+  }
 }
