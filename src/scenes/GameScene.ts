@@ -262,9 +262,9 @@ export class GameScene extends Phaser.Scene {
           // Check if this is a NEW platform
           const isNewPlatform = !platform.isContacted();
           
-          if (isNewPlatform) {
-            // Combo: landed on new platform
-            this.comboSystem.onNewPlatformLand();
+        if (isNewPlatform) {
+          // Combo: landed on new platform
+          this.comboSystem.onNewPlatformLand(this.time.now);
             
             // Audio feedback (existing logic)
             const deathThreshold = this.cameras.main.scrollY + this.gameHeight + 50;
@@ -428,12 +428,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateCombo(): void {
+    this.comboSystem.checkTimeout(this.time.now);
+    
     const comboCount = this.comboSystem.getComboCount();
     this.comboIndicator.update(comboCount);
     
     if (this.comboSystem.isComboActive()) {
       const maxScale = this.comboSystem.getScalePulse();
       this.player.startPulse(maxScale, COMBO.PULSE_FREQUENCY);
+      this.player.setFlicker(this.comboSystem.isWarning(this.time.now));
     } else {
       this.player.stopPulse();
     }

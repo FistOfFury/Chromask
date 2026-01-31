@@ -3,6 +3,7 @@ import { COMBO } from '../constants';
 export class ComboSystem {
   private consecutiveLands: number = 0;
   private jumpStarted: boolean = false;
+  private lastLandTime: number = 0;
 
   /** Call when player initiates a jump */
   onJumpStart(): void {
@@ -10,10 +11,11 @@ export class ComboSystem {
   }
 
   /** Call when player lands on a NEW platform (isContacted() was false) */
-  onNewPlatformLand(): void {
+  onNewPlatformLand(currentTime: number): void {
     if (this.jumpStarted) {
       this.consecutiveLands++;
       this.jumpStarted = false;
+      this.lastLandTime = currentTime;
     }
   }
 
@@ -59,9 +61,29 @@ export class ComboSystem {
     );
   }
 
+  /** Check if combo is in warning state (about to timeout) */
+  isWarning(currentTime: number): boolean {
+    if (!this.isComboActive()) return false;
+    const elapsed = (currentTime - this.lastLandTime) / 1000;
+    return elapsed >= COMBO.WARNING_TIME && elapsed < COMBO.TIMEOUT_TIME;
+  }
+
+  /** Check and apply timeout - returns true if combo was reset */
+  checkTimeout(currentTime: number): boolean {
+    if (!this.isComboActive()) return false;
+    const elapsed = (currentTime - this.lastLandTime) / 1000;
+    if (elapsed >= COMBO.TIMEOUT_TIME) {
+      this.consecutiveLands = 0;
+      this.jumpStarted = false;
+      return true;
+    }
+    return false;
+  }
+
   /** Reset combo state (for new game) */
   reset(): void {
     this.consecutiveLands = 0;
     this.jumpStarted = false;
+    this.lastLandTime = 0;
   }
 }

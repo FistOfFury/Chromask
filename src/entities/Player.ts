@@ -14,6 +14,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private pulseTween: Phaser.Tweens.Tween | null = null;
   private pulseAura: Phaser.GameObjects.Ellipse | null = null;
   private currentPulseIntensity: number = 0;
+  private isFlickering: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player-sprite');
@@ -262,6 +263,40 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.pulseAura.setScale(1);
     }
     this.currentPulseIntensity = 0;
+    this.isFlickering = false;
+  }
+
+  setFlicker(flicker: boolean): void {
+    if (this.isFlickering === flicker) return;
+    this.isFlickering = flicker;
+    
+    if (!this.pulseAura || !this.pulseTween) return;
+    
+    this.pulseTween.stop();
+    
+    if (flicker) {
+      this.pulseTween = this.scene.tweens.add({
+        targets: this.pulseAura,
+        alpha: { from: 0.6, to: 0 },
+        duration: 100,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    } else {
+      const normalizedIntensity = (this.currentPulseIntensity - 1) * 10;
+      const maxAlpha = 0.4 + normalizedIntensity * 0.3;
+      
+      this.pulseTween = this.scene.tweens.add({
+        targets: this.pulseAura,
+        scale: { from: 1, to: 1.5 },
+        alpha: { from: maxAlpha, to: 0.1 },
+        duration: 125,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
   }
 
   isBelowScreen(cameraScrollY: number, cameraHeight: number): boolean {

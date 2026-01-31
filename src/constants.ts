@@ -444,4 +444,8 @@ export const COMBO = {
   MAX_SCALE_PULSE: 1.10,
   /** Pulse frequency (beats per second) */
   PULSE_FREQUENCY: 8,
+  /** Seconds before combo warning starts */
+  WARNING_TIME: 3,
+  /** Seconds before combo times out */
+  TIMEOUT_TIME: 5,
 } as const;
