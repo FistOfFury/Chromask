@@ -151,15 +151,18 @@ const VISUAL = {
   PLATFORM_INACTIVE_ALPHA: 0.3,         // Alpha for non-solid platforms
   PLATFORM_ACTIVE_ALPHA: 1.0,           // Alpha for solid platforms
   ALPHA_TRANSITION_MS: 150,             // Transition duration in ms
-  SHADOW_ALPHA: 0.08,                   // Shadow opacity (0-1)
+  SHADOW_ALPHA: 0.08,                   // Shadow opacity (0-1) at the top
   SHADOW_LIGHT_ANGLE: 90,               // Shadow angle in degrees (default 90° = light from top)
   SHADOW_ANGLE_MIN: 30,                 // Minimum random shadow angle
   SHADOW_ANGLE_MAX: 150,                // Maximum random shadow angle
   SHADOW_SPREAD: 15,                    // Shadow spread at the end (perspective width)
+  SHADOW_GRADIENT_STEPS: 100,           // Number of gradient strips for shadow fade
 };
 ```
 
 Shadow angles are randomized each game (30°-150°) to ensure the light source never comes from below. Lower angles (30°) cast shadows down-right, higher angles (150°) cast shadows down-left. 90° casts shadows straight down.
+
+Shadows render with a gradient fade effect using 100 horizontal strips. The alpha decreases linearly from `SHADOW_ALPHA` at the entity's base to 0 at the screen bottom. Each strip uses integer coordinates to maintain crisp pixelart edges while creating a smooth visual fade.
 
 ### HELP_DIALOG Constants
 
