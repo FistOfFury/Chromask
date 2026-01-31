@@ -47,7 +47,6 @@ export class PauseMenu extends Phaser.GameObjects.Container {
     this.createButton(scene, 0, -30 + buttonSpacing * 2, buttonWidth, buttonHeight, 'Exit', false, this.onExit);
 
     scene.add.existing(this);
-    this.setScrollFactor(0);
     this.setDepth(1000);
     this.setVisible(false);
   }
@@ -155,6 +154,8 @@ export class PauseMenu extends Phaser.GameObjects.Container {
   }
 
   show(): void {
+    const camera = this.scene.cameras.main;
+    this.setPosition(camera.width / 2, camera.scrollY + camera.height / 2);
     this.setVisible(true);
   }
 

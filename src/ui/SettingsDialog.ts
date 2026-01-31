@@ -185,7 +185,6 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     this.createCloseButton(scene, closeButtonY);
 
     scene.add.existing(this);
-    this.setScrollFactor(0);
     this.setDepth(1000);
     this.setVisible(false);
 
@@ -797,6 +796,8 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
       this.soundSettings = { ...currentSoundSettings, custom: { ...currentSoundSettings.custom } };
       this.updateAudioSection();
     }
+    const camera = this.scene.cameras.main;
+    this.setPosition(camera.width / 2, camera.scrollY + camera.height / 2);
     this.setVisible(true);
   }
 
