@@ -27,7 +27,7 @@ export class Shadow {
       return;
     }
 
-    const alpha = VISUAL.SHADOW_ALPHA;
+    const baseAlpha = VISUAL.SHADOW_ALPHA;
     const entityBottomY = y + height / 2;
 
     const screenBottom = cameraScrollY + cameraHeight;
@@ -41,20 +41,41 @@ export class Shadow {
     const lightAngleRad = (lightAngle * Math.PI) / 180;
     const lightDirX = -Math.cos(lightAngleRad);
 
-    const endX = x + shadowLength * lightDirX;
-    const endY = screenBottom;
-
     const spreadOffset = VISUAL.SHADOW_SPREAD;
+    const steps = VISUAL.SHADOW_GRADIENT_STEPS;
 
-    this.graphics.fillStyle(0x000000, alpha);
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      const nextT = (i + 1) / steps;
 
-    this.graphics.beginPath();
-    this.graphics.moveTo(x - width / 2, entityBottomY);
-    this.graphics.lineTo(x + width / 2, entityBottomY);
-    this.graphics.lineTo(endX + width / 2 + spreadOffset, endY);
-    this.graphics.lineTo(endX - width / 2 + spreadOffset, endY);
-    this.graphics.closePath();
-    this.graphics.fillPath();
+      const alpha = baseAlpha * (1 - t);
+      if (alpha <= 0.001) continue;
+
+      const yTop = entityBottomY + t * shadowLength;
+      const yBottom = entityBottomY + nextT * shadowLength;
+
+      const widthAtTop = width + t * spreadOffset * 2;
+      const widthAtBottom = width + nextT * spreadOffset * 2;
+
+      const xOffsetTop = t * shadowLength * lightDirX;
+      const xOffsetBottom = nextT * shadowLength * lightDirX;
+
+      const x1 = Math.round(x - widthAtTop / 2 + xOffsetTop);
+      const x2 = Math.round(x + widthAtTop / 2 + xOffsetTop);
+      const x3 = Math.round(x + widthAtBottom / 2 + xOffsetBottom);
+      const x4 = Math.round(x - widthAtBottom / 2 + xOffsetBottom);
+      const y1 = Math.round(yTop);
+      const y2 = Math.round(yBottom);
+
+      this.graphics.fillStyle(0x000000, alpha);
+      this.graphics.beginPath();
+      this.graphics.moveTo(x1, y1);
+      this.graphics.lineTo(x2, y1);
+      this.graphics.lineTo(x3, y2);
+      this.graphics.lineTo(x4, y2);
+      this.graphics.closePath();
+      this.graphics.fillPath();
+    }
   }
 
   setDepth(depth: number): void {

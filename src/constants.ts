@@ -208,6 +208,8 @@ export const VISUAL = {
   SHADOW_ANGLE_MAX: 150,
   /** Shadow spread at the end (perspective width) */
   SHADOW_SPREAD: 15,
+  /** Number of gradient strips for shadow fade effect (higher = smoother gradient) */
+  SHADOW_GRADIENT_STEPS: 100,
 };
 
 // =============================================================================
