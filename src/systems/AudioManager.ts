@@ -59,7 +59,8 @@ export class AudioManager {
 
   playGameOver(): void {
     if (!this.isCategoryEnabled(SoundCategory.UI)) return;
-    this.scene.sound.play(AUDIO.KEYS.GAME_OVER);
+    const key = Math.random() < 0.25 ? AUDIO.KEYS.GAME_OVER_ALT : AUDIO.KEYS.GAME_OVER;
+    this.scene.sound.play(key);
   }
 
   // Play random BRUH sound with cooldown

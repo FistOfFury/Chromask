@@ -390,6 +390,7 @@ export const AUDIO = {
     PLATFORM_HIT: 'sfx-platform-hit', // Will be suffixed with color name
     GAME_START: 'sfx-game-start',
     GAME_OVER: 'sfx-game-over',
+    GAME_OVER_ALT: 'sfx-game-over-alt',
     BRUH: ['sfx-bruh1', 'sfx-bruh2', 'sfx-bruh3'],
     SUFFER: ['sfx-suffer1', 'sfx-suffer2', 'sfx-suffer3', 'sfx-suffer4', 'sfx-suffer5', 'sfx-suffer6'],
   },
@@ -408,6 +409,7 @@ export const AUDIO = {
     'sfx-platform-hit-WHITE': 'assets/sounds/SFX PF HIT - WHITE.wav',
     'sfx-game-start': 'assets/sounds/SFX GAME START.wav',
     'sfx-game-over': 'assets/sounds/SFX GAME OVER.wav',
+    'sfx-game-over-alt': 'assets/sounds/WHAT WILL UR MAMA THINK.wav',
     'sfx-bruh1': 'assets/sounds/SFX BRUH1.wav',
     'sfx-bruh2': 'assets/sounds/SFX BRUH2.wav',
     'sfx-bruh3': 'assets/sounds/SFX BRUH3.wav',
